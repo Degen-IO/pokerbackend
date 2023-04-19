@@ -10,7 +10,7 @@ const typeDefs = gql`
   }
 
   type Player {
-    _id: ID!
+    _id: ID
     name: String!
     chips: Int!
     isDealer: Boolean!
@@ -22,6 +22,52 @@ const typeDefs = gql`
     lastBet: Int!
     betAmount: Int!
     user: User! # add this field to reference the user who owns the player
+  }
+
+  type Game {
+    _id: ID!
+    name: String!
+    status: GameStatus!
+    players: [Player!]!
+    deck: Deck!
+  }
+
+  enum GameStatus {
+    IN_PROGRESS
+    FINISHED
+  }
+
+  type Card {
+    rank: Rank!
+    suit: Suit!
+  }
+
+  enum Rank {
+    TWO
+    THREE
+    FOUR
+    FIVE
+    SIX
+    SEVEN
+    EIGHT
+    NINE
+    TEN
+    JACK
+    QUEEN
+    KING
+    ACE
+  }
+
+  enum Suit {
+    CLUBS
+    DIAMONDS
+    HEARTS
+    SPADES
+  }
+
+  type Deck {
+    _id: ID!
+    cards: [Card!]!
   }
 
   type Auth {
@@ -39,8 +85,7 @@ const typeDefs = gql`
   type Mutation {
     addUser(name: String!, email: String!, password: String!): Auth
     login(email: String!, password: String!): Auth
-
-    removeUser(userId: ID!): User
+    removeUser(_id: ID!): User
   }
 `;
 
