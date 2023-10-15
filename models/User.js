@@ -1,42 +1,55 @@
-const { Schema, model, Types } = require("mongoose");
 const bcrypt = require("bcrypt");
 
-const userSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    match: [/.+@.+\..+/, "Must match an email address!"],
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 5,
-  },
-  players: [{ type: Types.ObjectId, ref: "Player" }],
-});
+const getUserModel = (sequelize, { DataTypes }) => {
+  const User = sequelize.define("user", {
+    id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+        isEmail: true,
+      },
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        len: [5, 255], // Minimum length of 5 characters
+      },
+    },
+  });
 
-// set up pre-save middleware to create password
-userSchema.pre("save", async function (next) {
-  if (this.isNew || this.isModified("password")) {
+  // Define an association with the Player model
+  User.associate = (models) => {
+    User.hasMany(models.Player);
+  };
+
+  // set up beforeCreate hook to hash the password
+  User.addHook("beforeCreate", async (user) => {
     const saltRounds = 10;
-    this.password = await bcrypt.hash(this.password, saltRounds);
-  }
+    user.password = await bcrypt.hash(user.password, saltRounds);
+  });
 
-  next();
-});
+  // Compare the incoming password with the hashed password
+  User.prototype.isCorrectPassword = async function (password) {
+    return bcrypt.compare(password, this.password);
+  };
 
-// compare the incoming password with the hashed password
-userSchema.methods.isCorrectPassword = async function (password) {
-  return bcrypt.compare(password, this.password);
+  return User; // Export the User model
 };
 
-const User = model("User", userSchema);
-
-module.exports = User;
+module.exports = { getUserModel };

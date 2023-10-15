@@ -1,29 +1,30 @@
-const db = require("../config/connection");
-const { User, Player, Deck, Card } = require("../models");
-const UserSeeds = require("./profileSeeds.json");
-const PlayerSeeds = require("./playerSeeds.json");
-const CardSeeds = require("./cardSeeds.json");
+const { sequelize, User, Player } = require("../models");
+const fs = require("fs");
+const path = require("path");
 
-db.once("open", async () => {
+const seedData = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, "userSeeds.json"), "utf8")
+);
+
+const seedDatabase = async () => {
   try {
-    await User.deleteMany({});
-    await Player.deleteMany({});
-    await Card.deleteMany({});
-    await User.create(UserSeeds);
-    await Player.create(PlayerSeeds);
-    await Card.create(CardSeeds);
-    const deck = new Deck();
-    deck.cards = await Card.find();
-    console.log(
-      "Original deck ==============================================="
-    );
-    console.log(deck.cards);
-    deck.shuffle();
-    console.log("shuffle deck==========================");
-    console.log(deck.cards);
-    console.log("Seeded!");
+    await sequelize.sync({ force: true });
+
+    for (const userData of seedData) {
+      const user = await User.create(userData.User);
+      await Player.create({
+        ...userData.Player,
+        user_id: user.id, // Associate the player with the created user
+      });
+    }
+
+    console.log("Database seeded successfully.");
+
     process.exit(0);
-  } catch (err) {
-    throw err;
+  } catch (error) {
+    console.error("Error seeding the database:", error);
+    process.exit(1);
   }
-});
+};
+
+seedDatabase();

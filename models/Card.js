@@ -1,35 +1,54 @@
-const { Schema, model } = require("mongoose");
-/*
+const { Model, DataTypes } = require("sequelize");
+const sequelize = require("../config/connection");
 
+class Card extends Model {}
 
-*/
-const cardSchema = new Schema({
-  rank: {
-    type: String,
-    enum: [
-      "TWO",
-      "THREE",
-      "FOUR",
-      "FIVE",
-      "SIX",
-      "SEVEN",
-      "EIGHT",
-      "NINE",
-      "TEN",
-      "JACK",
-      "QUEEN",
-      "KING",
-      "ACE",
-    ],
-    required: true,
+Card.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    rank: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        isIn: [
+          [
+            "TWO",
+            "THREE",
+            "FOUR",
+            "FIVE",
+            "SIX",
+            "SEVEN",
+            "EIGHT",
+            "NINE",
+            "TEN",
+            "JACK",
+            "QUEEN",
+            "KING",
+            "ACE",
+          ],
+        ],
+      },
+    },
+    suit: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        isIn: [["CLUBS", "DIAMONDS", "HEARTS", "SPADES"]],
+      },
+    },
   },
-  suit: {
-    type: String,
-    enum: ["CLUBS", "DIAMONDS", "HEARTS", "SPADES"],
-    required: true,
-  },
-});
-
-const Card = model("Card", cardSchema);
+  {
+    sequelize,
+    timestamps: false,
+    freezeTableName: true,
+    underscored: true,
+    modelName: "card",
+  }
+);
 
 module.exports = Card;

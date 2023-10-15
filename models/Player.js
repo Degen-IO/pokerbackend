@@ -1,26 +1,72 @@
-const { Schema, model } = require("mongoose");
-/*
+const getPlayerModel = (sequelize, { DataTypes }) => {
+  const Player = sequelize.define("player", {
+    id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    chips: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    isDealer: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    isSmallBlind: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    isBigBlind: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    hand: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
+    isAllIn: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    lastBet: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    betAmount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      unique: true,
+      references: {
+        model: "users",
+        key: "id",
+      },
+    },
+  });
 
+  Player.associate = (models) => {
+    Player.belongsTo(models.User);
+  };
 
-*/
-const PlayerSchema = new Schema({
-  name: { type: String, required: true },
-  chips: { type: Number, required: true },
-  isDealer: { type: Boolean, required: true, default: false },
-  isSmallBlind: { type: Boolean, required: true, default: false },
-  isBigBlind: { type: Boolean, required: true, default: false },
-  hand: [{ type: String }],
-  isActive: { type: Boolean, required: true, default: true },
-  isAllIn: { type: Boolean, required: true, default: false },
-  lastBet: { type: Number, required: true, default: 0 },
-  betAmount: { type: Number, required: true, default: 0 },
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    unique: true, //ensure each user only has one player
-  },
-});
+  return Player;
+};
 
-const Player = model("Player", PlayerSchema);
-
-module.exports = Player;
+module.exports = { getPlayerModel };

@@ -2,15 +2,14 @@ const { gql } = require("apollo-server-express");
 
 const typeDefs = gql`
   type User {
-    _id: ID
+    id: ID
     name: String
     email: String
-    password: String
     players: [Player]!
   }
 
   type Player {
-    _id: ID
+    id: ID
     name: String!
     chips: Int!
     isDealer: Boolean!
@@ -25,7 +24,7 @@ const typeDefs = gql`
   }
 
   type Game {
-    _id: ID!
+    id: ID!
     name: String!
     status: GameStatus!
     players: [Player!]!
@@ -66,7 +65,7 @@ const typeDefs = gql`
   }
 
   type Deck {
-    _id: ID!
+    id: ID!
     cards: [Card!]!
   }
 

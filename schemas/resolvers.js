@@ -12,7 +12,7 @@ const resolvers = {
       return Player.find();
     },
 
-    player: async () => {
+    player: async (parent, { playerId }) => {
       return Player.findOne({ _id: playerId });
     },
 
@@ -44,8 +44,8 @@ const resolvers = {
       const token = signToken(user);
       return { token, user };
     },
-    removeUser: async (parent, { userId }) => {
-      return User.findOneAndDelete({ _id: userId });
+    removeUser: async (parent, { _id }) => {
+      return User.findOneAndDelete({ _id });
     },
   },
 };

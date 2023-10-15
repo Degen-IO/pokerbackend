@@ -1,0 +1,35 @@
+[
+  {
+    "User": {
+      "name": "User1",
+      "email": "user1@example.com",
+      "password": "password1"
+    },
+    "Player": {
+      "name": "Player1",
+      "chips": 100
+    }
+  },
+  {
+    "User": {
+      "name": "User2",
+      "email": "user2@example.com",
+      "password": "password2"
+    },
+    "Player": {
+      "name": "Player2",
+      "chips": 100
+    }
+  },
+  {
+    "User": {
+      "name": "User3",
+      "email": "user3@example.com",
+      "password": "password3"
+    },
+    "Player": {
+      "name": "Player3",
+      "chips": 100
+    }
+  }
+]
