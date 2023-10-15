@@ -1,10 +1,5 @@
-const { Model, DataTypes } = require("sequelize");
-const sequelize = require("../config/connection");
-
-class Card extends Model {}
-
-Card.init(
-  {
+const getCardModel = (sequelize, { DataTypes }) => {
+  const Card = sequelize.define("card", {
     id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -41,14 +36,13 @@ Card.init(
         isIn: [["CLUBS", "DIAMONDS", "HEARTS", "SPADES"]],
       },
     },
-  },
-  {
-    sequelize,
-    timestamps: false,
-    freezeTableName: true,
-    underscored: true,
-    modelName: "card",
-  }
-);
+  });
 
-module.exports = Card;
+  Card.associate = (models) => {
+    Card.belongsTo(models.Deck);
+  };
+
+  return Card;
+};
+
+module.exports = { getCardModel };
