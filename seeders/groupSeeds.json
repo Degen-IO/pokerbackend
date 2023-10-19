@@ -1,0 +1,19 @@
+[
+  {
+    "name": "Group1",
+    "UserGroupRoles": [
+      { "role": "admin", "userIndex": 0 },
+      { "role": "member", "userIndex": 1 },
+      { "role": "member", "userIndex": 2 }
+    ]
+  },
+  {
+    "name": "Group2",
+    "UserGroupRoles": [
+      { "role": "admin", "userIndex": 3 },
+      { "role": "member", "userIndex": 0 },
+      { "role": "member", "userIndex": 1 },
+      { "role": "member", "userIndex": 4 }
+    ]
+  }
+]

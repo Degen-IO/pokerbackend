@@ -31,11 +31,40 @@ const getUserModel = (sequelize, { DataTypes }) => {
         len: [5, 255], // Minimum length of 5 characters
       },
     },
+    chip_stack: {
+      type: DataTypes.DECIMAL(10, 2), // Example data type for chip stacks
+      allowNull: false,
+      defaultValue: 0, // Default chip stack value
+    },
   });
 
-  // Define an association with the Player model
+  // Define associations with other models
   User.associate = (models) => {
-    User.hasMany(models.Player);
+    // User has many UserGroupRole associations
+    User.hasMany(models.UserGroupRole, {
+      foreignKey: "userId",
+    });
+
+    // User has many PokerGroup associations
+    User.belongsToMany(models.PokerGroup, {
+      through: "UserGroupRole",
+      foreignKey: "userId",
+    });
+
+    // User has many PokerGame associations
+    User.hasMany(models.PokerGame, {
+      foreignKey: "userId",
+    });
+
+    // User has many PlayerHand associations
+    User.hasMany(models.PlayerHand, {
+      foreignKey: "userId",
+    });
+
+    // User has many PlayerAction associations
+    User.hasMany(models.PlayerAction, {
+      foreignKey: "userId",
+    });
   };
 
   // set up beforeCreate hook to hash the password

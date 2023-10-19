@@ -1,9 +1,13 @@
 const Sequelize = require("sequelize");
 require("dotenv").config();
 const { getUserModel } = require("./User");
-const { getPlayerModel } = require("./Player");
 const { getCardModel } = require("./Card");
 const { getDeckModel } = require("./Deck");
+const { getUserGroupRoleModel } = require("./UserGroupRole");
+const { getPokerGameModel } = require("./PokerGame");
+const { getPokerGroupModel } = require("./PokerGroup");
+const { getPlayerActionModel } = require("./PlayerAction");
+const { getPlayerHandModel } = require("./PlayerHand");
 
 const sequelize = new Sequelize(
   process.env.PGDATABASE,
@@ -18,7 +22,11 @@ const sequelize = new Sequelize(
 
 const models = {
   User: getUserModel(sequelize, Sequelize),
-  Player: getPlayerModel(sequelize, Sequelize),
+  UserGroupRole: getUserGroupRoleModel(sequelize, Sequelize),
+  PlayerAction: getPlayerActionModel(sequelize, Sequelize),
+  PlayerHand: getPlayerHandModel(sequelize, Sequelize),
+  PokerGame: getPokerGameModel(sequelize, Sequelize),
+  PokerGroup: getPokerGroupModel(sequelize, Sequelize),
   Card: getCardModel(sequelize, Sequelize),
   Deck: getDeckModel(sequelize, Sequelize),
 };

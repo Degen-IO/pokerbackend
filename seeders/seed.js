@@ -1,9 +1,19 @@
-const { sequelize, User, Player, Card } = require("../models");
+const {
+  sequelize,
+  User,
+  UserGroupRole,
+  PokerGroup,
+  Card,
+} = require("../models");
 const fs = require("fs");
 const path = require("path");
 
-const seedData = JSON.parse(
+const userSeedData = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, "userSeeds.json"), "utf8")
+);
+
+const groupSeedData = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, "groupSeeds.json"), "utf8")
 );
 
 const cardSeedData = JSON.parse(
@@ -14,14 +24,36 @@ const seedDatabase = async () => {
   try {
     await sequelize.sync({ force: true });
 
-    for (const userData of seedData) {
+    // Seed Users
+    for (const userData of userSeedData) {
       const user = await User.create(userData.User);
-      await Player.create({
-        ...userData.Player,
-        user_id: user.id, // Associate the player with the created user
-      });
     }
 
+    // Seed Groups and UserGroupRoles
+    for (const groupData of groupSeedData) {
+      const pokerGroup = await PokerGroup.create({ name: groupData.name });
+
+      for (const roleData of groupData.UserGroupRoles) {
+        let user, userGroupRole;
+
+        user = await User.findByPk(userSeedData[roleData.userIndex].User.id);
+
+        userGroupRole = await UserGroupRole.create({
+          role: roleData.role,
+        });
+
+        const pokerGroup = await PokerGroup.findOne({
+          where: { name: groupData.name },
+        });
+
+        if (user && pokerGroup) {
+          await userGroupRole.setUser(user);
+          await userGroupRole.setPokerGroup(pokerGroup);
+        }
+      }
+    }
+
+    // Seed Cards
     for (const cardData of cardSeedData) {
       await Card.create(cardData);
     }

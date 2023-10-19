@@ -6,10 +6,6 @@ const getDeckModel = (sequelize, { DataTypes }) => {
       primaryKey: true,
       autoIncrement: true,
     },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
   });
 
   // Define the one-to-many relationship between Deck and Card
