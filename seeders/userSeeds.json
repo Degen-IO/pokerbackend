@@ -5,8 +5,7 @@
       "email": "user1@example.com",
       "password": "password1",
       "chip_stack": 1000
-    },
-    "Player": {}
+    }
   },
   {
     "User": {
@@ -14,8 +13,7 @@
       "email": "user2@example.com",
       "password": "password2",
       "chip_stack": 1000
-    },
-    "Player": {}
+    }
   },
   {
     "User": {
@@ -23,8 +21,7 @@
       "email": "user3@example.com",
       "password": "password3",
       "chip_stack": 1000
-    },
-    "Player": {}
+    }
   },
   {
     "User": {
@@ -32,8 +29,7 @@
       "email": "user4@example.com",
       "password": "password4",
       "chip_stack": 1000
-    },
-    "Player": {}
+    }
   },
   {
     "User": {
@@ -41,7 +37,6 @@
       "email": "user5@example.com",
       "password": "password5",
       "chip_stack": 1000
-    },
-    "Player": {}
+    }
   }
 ]

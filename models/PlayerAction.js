@@ -1,6 +1,6 @@
 const getPlayerActionModel = (sequelize, { DataTypes }) => {
   const PlayerAction = sequelize.define("playerAction", {
-    id: {
+    actionId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,

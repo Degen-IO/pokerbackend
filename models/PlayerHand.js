@@ -1,6 +1,6 @@
 const getPlayerHandModel = (sequelize, { DataTypes }) => {
   const PlayerHand = sequelize.define("playerHand", {
-    id: {
+    handId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,

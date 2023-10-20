@@ -20,6 +20,8 @@ const cardSeedData = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, "cardSeeds.json"), "utf8")
 );
 
+// Add this code before your loop for debugging
+
 const seedDatabase = async () => {
   try {
     await sequelize.sync({ force: true });
@@ -36,15 +38,21 @@ const seedDatabase = async () => {
       for (const roleData of groupData.UserGroupRoles) {
         let user, userGroupRole;
 
-        user = await User.findByPk(userSeedData[roleData.userIndex].User.id);
+        console.log(groupData.UserGroupRoles);
+
+        user = await User.findByPk(roleData.userId);
+
+        console.log("Retrieved user:", user);
 
         userGroupRole = await UserGroupRole.create({
           role: roleData.role,
+          // userId: roleData.userId,
         });
 
         const pokerGroup = await PokerGroup.findOne({
           where: { name: groupData.name },
         });
+        console.log("Retrieved pokerGroup:", pokerGroup);
 
         if (user && pokerGroup) {
           await userGroupRole.setUser(user);

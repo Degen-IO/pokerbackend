@@ -1,6 +1,6 @@
 const getPokerGroupModel = (sequelize, { DataTypes }) => {
   const PokerGroup = sequelize.define("pokerGroup", {
-    id: {
+    groupId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,
@@ -17,7 +17,7 @@ const getPokerGroupModel = (sequelize, { DataTypes }) => {
     PokerGroup.hasMany(models.UserGroupRole, { foreignKey: "groupId" });
 
     //a poker group can have multiple poker games, define an association for poker games within the group.
-    PokerGroup.hasMany(models.PokerGame, { foreignKey: "groupId" });
+    PokerGroup.hasMany(models.PokerGame, { foreignKey: "gameId" });
   };
 
   return PokerGroup;

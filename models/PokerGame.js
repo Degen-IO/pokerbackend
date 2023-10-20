@@ -1,6 +1,6 @@
 const getPokerGameModel = (sequelize, { DataTypes }) => {
   const PokerGame = sequelize.define("pokerGame", {
-    id: {
+    gameId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,
