@@ -1,19 +1,11 @@
 const { AuthenticationError } = require("apollo-server-express");
-const { User, Player } = require("../models");
+const { User } = require("../models");
 const { signToken } = require("../utils/auth");
 
 const resolvers = {
   Query: {
     users: async () => {
       return User.find();
-    },
-
-    players: async () => {
-      return Player.find();
-    },
-
-    player: async (parent, { playerId }) => {
-      return Player.findOne({ _id: playerId });
     },
 
     user: async (parent, { userId }) => {

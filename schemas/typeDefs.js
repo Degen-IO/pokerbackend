@@ -77,8 +77,6 @@ const typeDefs = gql`
   type Query {
     users: [User]!
     user(userId: ID!): User
-    players: [Player]!
-    player(playerId: ID!): Player
   }
 
   type Mutation {

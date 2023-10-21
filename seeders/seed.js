@@ -33,11 +33,11 @@ const seedDatabase = async () => {
       for (const roleData of groupData.UserGroupRoles) {
         let user, userGroupRole;
 
-        console.log(groupData.UserGroupRoles);
+        // console.log(groupData.UserGroupRoles);
 
         user = await User.findByPk(roleData.userId);
 
-        console.log("Retrieved user:", user);
+        // console.log("Retrieved user:", user);
 
         userGroupRole = await UserGroupRole.create({
           role: roleData.role,
@@ -47,7 +47,7 @@ const seedDatabase = async () => {
         const pokerGroup = await PokerGroup.findOne({
           where: { name: groupData.name },
         });
-        console.log("Retrieved pokerGroup:", pokerGroup);
+        // console.log("Retrieved pokerGroup:", pokerGroup);
 
         if (user && pokerGroup) {
           await userGroupRole.setUser(user);
