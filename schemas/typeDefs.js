@@ -8,21 +8,6 @@ const typeDefs = gql`
     players: [Player]!
   }
 
-  type Player {
-    id: ID
-    name: String!
-    chips: Int!
-    isDealer: Boolean!
-    isSmallBlind: Boolean!
-    isBigBlind: Boolean!
-    hand: [String!]!
-    isActive: Boolean!
-    isAllIn: Boolean!
-    lastBet: Int!
-    betAmount: Int!
-    user: User! # add this field to reference the user who owns the player
-  }
-
   type Game {
     id: ID!
     name: String!

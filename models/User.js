@@ -78,7 +78,7 @@ const getUserModel = (sequelize, { DataTypes }) => {
     return bcrypt.compare(password, this.password);
   };
 
-  return User; // Export the User model
+  return User;
 };
 
 module.exports = { getUserModel };

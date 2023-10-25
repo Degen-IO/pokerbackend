@@ -4,8 +4,6 @@ const { ApolloServer } = require("apollo-server-express");
 const { authMiddleware } = require("./utils/auth");
 
 const { typeDefs, resolvers } = require("./schemas");
-//we have set up the sequelize connection in config/connection.js for now..
-// const db = require("./config/connection");
 
 const PORT = process.env.PORT || 3666;
 const sequelize = require("./config/connection");
@@ -35,5 +33,4 @@ const startApolloServer = async (typeDefs, resolvers) => {
   });
 };
 
-// Call the async function to start the server
 startApolloServer(typeDefs, resolvers);
