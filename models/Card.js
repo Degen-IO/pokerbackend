@@ -1,35 +1,48 @@
-const { Schema, model } = require("mongoose");
-/*
+const getCardModel = (sequelize, { DataTypes }) => {
+  const Card = sequelize.define("card", {
+    id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    rank: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        isIn: [
+          [
+            "TWO",
+            "THREE",
+            "FOUR",
+            "FIVE",
+            "SIX",
+            "SEVEN",
+            "EIGHT",
+            "NINE",
+            "TEN",
+            "JACK",
+            "QUEEN",
+            "KING",
+            "ACE",
+          ],
+        ],
+      },
+    },
+    suit: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        isIn: [["CLUBS", "DIAMONDS", "HEARTS", "SPADES"]],
+      },
+    },
+  });
 
+  Card.associate = (models) => {
+    Card.belongsTo(models.Deck);
+  };
 
-*/
-const cardSchema = new Schema({
-  rank: {
-    type: String,
-    enum: [
-      "TWO",
-      "THREE",
-      "FOUR",
-      "FIVE",
-      "SIX",
-      "SEVEN",
-      "EIGHT",
-      "NINE",
-      "TEN",
-      "JACK",
-      "QUEEN",
-      "KING",
-      "ACE",
-    ],
-    required: true,
-  },
-  suit: {
-    type: String,
-    enum: ["CLUBS", "DIAMONDS", "HEARTS", "SPADES"],
-    required: true,
-  },
-});
+  return Card;
+};
 
-const Card = model("Card", cardSchema);
-
-module.exports = Card;
+module.exports = { getCardModel };

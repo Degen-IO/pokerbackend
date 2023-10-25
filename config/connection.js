@@ -1,8 +1,15 @@
-const mongoose = require("mongoose");
+const Sequelize = require("sequelize");
+require("dotenv").config();
 
-mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/poker", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+const sequelize = new Sequelize(
+  process.env.PGDATABASE,
+  process.env.PGUSER,
+  process.env.PGPASSWORD,
+  {
+    host: process.env.PGHOST,
+    port: process.env.PGPORT,
+    dialect: "postgres",
+  }
+);
 
-module.exports = mongoose.connection;
+module.exports = sequelize;

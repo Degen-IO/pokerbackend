@@ -1,12 +1,13 @@
 const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
-const path = require("path");
+// const path = require("path");
 const { authMiddleware } = require("./utils/auth");
 
 const { typeDefs, resolvers } = require("./schemas");
-const db = require("./config/connection");
 
 const PORT = process.env.PORT || 3666;
+const sequelize = require("./config/connection");
+const models = require("./models");
 const app = express();
 const server = new ApolloServer({
   typeDefs,
@@ -22,7 +23,7 @@ const startApolloServer = async (typeDefs, resolvers) => {
   await server.start();
   server.applyMiddleware({ app });
 
-  db.once("open", () => {
+  sequelize.sync().then(async () => {
     app.listen(PORT, () => {
       console.log(`API server running on port ${PORT}!`);
       console.log(
@@ -32,5 +33,4 @@ const startApolloServer = async (typeDefs, resolvers) => {
   });
 };
 
-// Call the async function to start the server
 startApolloServer(typeDefs, resolvers);

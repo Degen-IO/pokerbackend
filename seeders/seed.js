@@ -1,29 +1,63 @@
-const db = require("../config/connection");
-const { User, Player, Deck, Card } = require("../models");
-const UserSeeds = require("./profileSeeds.json");
-const PlayerSeeds = require("./playerSeeds.json");
-const CardSeeds = require("./cardSeeds.json");
+const sequelize = require("../config/connection");
+const { User, UserGroupRole, PokerGroup, Card } = require("../models");
+const fs = require("fs");
+const path = require("path");
 
-db.once("open", async () => {
+const userSeedData = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, "userSeeds.json"), "utf8")
+);
+
+const groupSeedData = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, "groupSeeds.json"), "utf8")
+);
+
+const cardSeedData = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, "cardSeeds.json"), "utf8")
+);
+
+const seedDatabase = async () => {
   try {
-    await User.deleteMany({});
-    await Player.deleteMany({});
-    await Card.deleteMany({});
-    await User.create(UserSeeds);
-    await Player.create(PlayerSeeds);
-    await Card.create(CardSeeds);
-    const deck = new Deck();
-    deck.cards = await Card.find();
-    console.log(
-      "Original deck ==============================================="
-    );
-    console.log(deck.cards);
-    deck.shuffle();
-    console.log("shuffle deck==========================");
-    console.log(deck.cards);
-    console.log("Seeded!");
+    await sequelize.sync({ force: true });
+
+    // Seed Users
+    for (const userData of userSeedData) {
+      const user = await User.create(userData.User);
+    }
+
+    // Seed Groups and UserGroupRoles
+    for (const groupData of groupSeedData) {
+      const pokerGroup = await PokerGroup.create({ name: groupData.name });
+
+      for (const roleData of groupData.UserGroupRoles) {
+        let user, userGroupRole;
+
+        user = await User.findByPk(roleData.userId);
+
+        userGroupRole = await UserGroupRole.create({
+          role: roleData.role,
+        });
+
+        const pokerGroup = await PokerGroup.findOne({
+          where: { name: groupData.name },
+        });
+
+        if (user && pokerGroup) {
+          await userGroupRole.setUser(user);
+          await userGroupRole.setPokerGroup(pokerGroup);
+        }
+      }
+    }
+    // Seed Cards
+    for (const cardData of cardSeedData) {
+      await Card.create(cardData);
+    }
+
+    console.log("Database seeded successfully.");
     process.exit(0);
-  } catch (err) {
-    throw err;
+  } catch (error) {
+    console.error("Error seeding the database:", error);
+    process.exit(1);
   }
-});
+};
+
+seedDatabase();

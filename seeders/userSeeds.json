@@ -1,0 +1,42 @@
+[
+  {
+    "User": {
+      "name": "User1",
+      "email": "user1@example.com",
+      "password": "password1",
+      "chip_stack": 1000
+    }
+  },
+  {
+    "User": {
+      "name": "User2",
+      "email": "user2@example.com",
+      "password": "password2",
+      "chip_stack": 1000
+    }
+  },
+  {
+    "User": {
+      "name": "User3",
+      "email": "user3@example.com",
+      "password": "password3",
+      "chip_stack": 1000
+    }
+  },
+  {
+    "User": {
+      "name": "User4",
+      "email": "user4@example.com",
+      "password": "password4",
+      "chip_stack": 1000
+    }
+  },
+  {
+    "User": {
+      "name": "User5",
+      "email": "user5@example.com",
+      "password": "password5",
+      "chip_stack": 1000
+    }
+  }
+]

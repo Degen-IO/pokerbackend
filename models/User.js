@@ -1,42 +1,84 @@
-const { Schema, model, Types } = require("mongoose");
 const bcrypt = require("bcrypt");
 
-const userSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    match: [/.+@.+\..+/, "Must match an email address!"],
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 5,
-  },
-  players: [{ type: Types.ObjectId, ref: "Player" }],
-});
+const getUserModel = (sequelize, { DataTypes }) => {
+  const User = sequelize.define("user", {
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+        isEmail: true,
+      },
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        len: [5, 255], // Minimum length of 5 characters
+      },
+    },
+    chip_stack: {
+      type: DataTypes.DECIMAL(10, 2), // Example data type for chip stacks
+      allowNull: false,
+      defaultValue: 0, // Default chip stack value
+    },
+  });
 
-// set up pre-save middleware to create password
-userSchema.pre("save", async function (next) {
-  if (this.isNew || this.isModified("password")) {
+  // Define associations with other models
+  User.associate = (models) => {
+    // User has many UserGroupRole associations
+    User.hasMany(models.UserGroupRole, {
+      foreignKey: "userId",
+    });
+
+    // User has many PokerGroup associations
+    User.belongsToMany(models.PokerGroup, {
+      through: "UserGroupRole",
+      foreignKey: "userId",
+    });
+
+    // User has many PokerGame associations
+    User.hasMany(models.PokerGame, {
+      foreignKey: "userId",
+    });
+
+    // User has many PlayerHand associations
+    User.hasMany(models.PlayerHand, {
+      foreignKey: "userId",
+    });
+
+    // User has many PlayerAction associations
+    User.hasMany(models.PlayerAction, {
+      foreignKey: "userId",
+    });
+  };
+
+  // set up beforeCreate hook to hash the password
+  User.addHook("beforeCreate", async (user) => {
     const saltRounds = 10;
-    this.password = await bcrypt.hash(this.password, saltRounds);
-  }
+    user.password = await bcrypt.hash(user.password, saltRounds);
+  });
 
-  next();
-});
+  // Compare the incoming password with the hashed password
+  User.prototype.isCorrectPassword = async function (password) {
+    return bcrypt.compare(password, this.password);
+  };
 
-// compare the incoming password with the hashed password
-userSchema.methods.isCorrectPassword = async function (password) {
-  return bcrypt.compare(password, this.password);
+  return User;
 };
 
-const User = model("User", userSchema);
-
-module.exports = User;
+module.exports = { getUserModel };
