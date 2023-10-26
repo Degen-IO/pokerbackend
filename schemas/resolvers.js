@@ -1,4 +1,5 @@
 const { AuthenticationError } = require("apollo-server-express");
+const bcrypt = require("bcryptjs");
 const { User } = require("../models");
 const { signToken } = require("../utils/auth");
 
@@ -22,15 +23,9 @@ const resolvers = {
     },
     login: async (parent, { email, password }) => {
       try {
-        // Log the inputs
-        console.log("Login attempt with email:", email);
-
         const user = await User.findOne({
           where: { email: email },
         });
-
-        // Log the user object (if found)
-        console.log("User found:", user);
 
         if (!user) {
           // Log and throw an error
@@ -40,9 +35,6 @@ const resolvers = {
 
         const correctPw = await user.isCorrectPassword(password);
 
-        // Log the result of password comparison
-        console.log("Password comparison result:", correctPw);
-
         if (!correctPw) {
           // Log and throw an error
           console.error("Incorrect password!");
@@ -51,9 +43,6 @@ const resolvers = {
 
         const token = signToken(user);
 
-        // Log the token
-        console.log("Token generated:", token);
-
         return { token, user };
       } catch (error) {
         console.error("Login error:", error);
@@ -61,8 +50,54 @@ const resolvers = {
       }
     },
 
-    removeUser: async (parent, { _id }) => {
-      return User.findOneAndDelete({ _id });
+    updateUser: async (parent, { userId, name, email, password }) => {
+      try {
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+          throw new Error("User not found");
+        }
+
+        if (name) {
+          user.name = name;
+        }
+
+        if (email) {
+          user.email = email;
+        }
+
+        if (password) {
+          if (password.length < 5 || password.length > 255) {
+            throw new Error(
+              "Password must be between 5 and 255 characters long"
+            );
+          }
+
+          const saltRounds = 10;
+          user.password = await bcrypt.hash(password, saltRounds);
+        }
+
+        await user.save();
+
+        return { message: "User successfully updated", user };
+      } catch (error) {
+        console.error("Update user error:", error);
+        throw error;
+      }
+    },
+
+    removeUser: async (parent, { userId }) => {
+      const user = await User.findByPk(userId);
+
+      if (!user) {
+        // Handle the case where the user with the given userId does not exist
+        throw new Error("User not found");
+      }
+      // Delete the user
+      await user.destroy();
+
+      // Return some confirmation message or the deleted user's data
+      return { success: true, message: "User successfully removed" };
     },
   },
 };

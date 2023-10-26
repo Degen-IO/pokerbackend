@@ -53,6 +53,11 @@ const typeDefs = gql`
     cards: [Card!]!
   }
 
+  type UserUpdateResponse {
+    message: String!
+    user: User
+  }
+
   type Auth {
     token: ID!
     user: User
@@ -66,6 +71,12 @@ const typeDefs = gql`
   type Mutation {
     addUser(name: String!, email: String!, password: String!): Auth
     login(email: String!, password: String!): Auth
+    updateUser(
+      userId: ID!
+      name: String
+      email: String
+      password: String
+    ): UserUpdateResponse
     removeUser(userId: ID!): User
   }
 `;
