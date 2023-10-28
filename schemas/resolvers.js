@@ -50,7 +50,13 @@ const resolvers = {
       }
     },
 
-    updateUser: async (parent, { userId, name, email, password }) => {
+    updateUser: async (parent, { userId, name, email, password }, context) => {
+      const contextAuthUserId = +context.authUserId; // Convert context.authUserId to an integer
+      const userIdInt = +userId; // Convert userId to an integer
+
+      if (contextAuthUserId !== userIdInt) {
+        throw new Error("You are not authorized to update this profile");
+      }
       try {
         const user = await User.findByPk(userId);
 
@@ -86,18 +92,30 @@ const resolvers = {
       }
     },
 
-    removeUser: async (parent, { userId }) => {
-      const user = await User.findByPk(userId);
+    removeUser: async (parent, { userId }, context) => {
+      const contextAuthUserId = +context.authUserId; // Convert context.authUserId to an integer
+      const userIdInt = +userId; // Convert userId to an integer
 
-      if (!user) {
-        // Handle the case where the user with the given userId does not exist
-        throw new Error("User not found");
+      if (contextAuthUserId !== userIdInt) {
+        throw new Error("You are not authorized to remove this user");
       }
-      // Delete the user
-      await user.destroy();
 
-      // Return some confirmation message or the deleted user's data
-      return { success: true, message: "User successfully removed" };
+      try {
+        const user = await User.findByPk(userIdInt);
+
+        if (!user) {
+          throw new Error("User not found");
+        }
+
+        // Delete the user
+        await user.destroy();
+
+        // Return some confirmation message or the deleted user's data
+        return { success: true, message: "User successfully removed" };
+      } catch (error) {
+        console.error("Remove user error:", error);
+        throw error;
+      }
     },
   },
 };
