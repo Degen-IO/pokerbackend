@@ -6,11 +6,11 @@ const { signToken } = require("../utils/auth");
 const resolvers = {
   Query: {
     users: async () => {
-      return User.find();
+      return User.findAll();
     },
 
     user: async (parent, { userId }) => {
-      return User.findOne({ _id: userId });
+      return User.findByPk(userId);
     },
   },
 
@@ -111,7 +111,7 @@ const resolvers = {
         await user.destroy();
 
         // Return some confirmation message or the deleted user's data
-        return { success: true, message: "User successfully removed" };
+        return { message: "User successfully removed" };
       } catch (error) {
         console.error("Remove user error:", error);
         throw error;

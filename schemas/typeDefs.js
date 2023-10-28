@@ -77,7 +77,7 @@ const typeDefs = gql`
       email: String
       password: String
     ): UserUpdateResponse
-    removeUser(userId: ID!): User
+    removeUser(userId: ID!): UserUpdateResponse
   }
 `;
 
