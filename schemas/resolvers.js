@@ -51,8 +51,8 @@ const resolvers = {
     },
 
     updateUser: async (parent, { userId, name, email, password }, context) => {
-      const contextAuthUserId = +context.authUserId; // Convert context.authUserId to an integer
-      const userIdInt = +userId; // Convert userId to an integer
+      const contextAuthUserId = parseInt(context.authUserId);
+      const userIdInt = parseInt(userId);
 
       if (contextAuthUserId !== userIdInt) {
         throw new Error("You are not authorized to update this profile");
@@ -93,8 +93,8 @@ const resolvers = {
     },
 
     removeUser: async (parent, { userId }, context) => {
-      const contextAuthUserId = +context.authUserId; // Convert context.authUserId to an integer
-      const userIdInt = +userId; // Convert userId to an integer
+      const contextAuthUserId = parseInt(context.authUserId);
+      const userIdInt = parseInt(userId);
 
       if (contextAuthUserId !== userIdInt) {
         throw new Error("You are not authorized to remove this user");
