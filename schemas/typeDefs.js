@@ -85,6 +85,7 @@ const typeDefs = gql`
     removeUser(userId: ID!): UserUpdateResponse
 
     createPokerGroup(name: String!): PokerGroup
+    deletePokerGroup(groupId: ID!): String
   }
 `;
 

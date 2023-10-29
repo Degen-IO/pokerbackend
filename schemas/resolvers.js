@@ -153,6 +153,38 @@ const resolvers = {
         throw error;
       }
     },
+    deletePokerGroup: async (parent, { groupId }, context) => {
+      // Check if the user is authorized to delete the group
+      if (!context.authUserId) {
+        throw new AuthenticationError(
+          "You must be logged in to delete a group"
+        );
+      }
+
+      const group = await PokerGroup.findByPk(groupId);
+
+      if (!group) {
+        throw new Error("Group not found");
+      }
+
+      // Check if the user is an admin of the group
+      const isAdmin = await UserGroupRole.findOne({
+        where: {
+          groupId,
+          userId: context.authUserId,
+          role: "admin",
+        },
+      });
+
+      if (!isAdmin) {
+        throw new Error("You are not authorized to delete this group");
+      }
+
+      // Delete the group
+      await group.destroy();
+
+      return "Group successfully deleted";
+    },
   },
 };
 
