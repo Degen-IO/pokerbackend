@@ -15,23 +15,33 @@ To prepare the development environment, you need files containing sensitive info
 
 ## Self Hosted
 
-TO ADD
+You may run on your machine. Make sure you have postgres and pgadmin installed locally.
+
+Replace the default `POSTGRES_HOST=db` (for use with docker containers) with `POSTGRES_HOST=localhost` and run `npm start` or `npm run watch` for development.
 
 ### Docker
 
+---
+
 We employ Docker to start several containers within your local environment, streamlining the development process and substituting certain system configurations with these containers.
 
-### Run the app using docker
+### Run the app using Docker
 
 ---
 
 1. Download and install docker.
 2. Download and install docker-compose.
 3. Create .env file as specified [here](#env-setup).
-4. Run `yarn docker:up` to download, build, and start containers defined in docker-compose.yml. Note: terminating this command will stop the containers. Add -d to detach and run in background.
+4. Run `npm run docker:up` to download, build, and start containers defined in docker-compose.yml. Note: terminating this command will stop the containers. Add -d to detach and run in background.
 5. After this, docker will be running the backend, database, and pgadmin.
-6. Open up docker and go to the CLI for backend.
-7. Run `npm run seed` to seed the tables in the DB.
+6. Go to the `pgadmin` container and select the container action `Open in Browser`. Use the `#PGADMIN` credentials set from your `.env`. You will need to setup the database.
+7. Click `Add New Server`. You will now be able to input your settings to create the database. In the General tab, choose whatever name you like.
+8. In the Connection tab, input the following from your enviroment variables:
+   - The Host Name / Address => `POSTGRES_HOST`
+   - Username => `POSTGRES_USER`
+   - Password => `POSTGRES_PASSWORD`
+9. Open up Docker and go to the CLI for backend container actions.
+10. Run `npm run seed` to seed the tables in the database and you've up and running!
 
 ### Docker Scripts
 
@@ -64,3 +74,15 @@ This command recompiles the services, or a specific service if indicated. Consid
 Similar to `npm run docker:down`, this command additionally removes orphan containers and all associated images linked to the services specified in [docker-compose.yml](docker/local/docker-compose.yml).
 
 Please bear in mind that you can execute all these commands individually for each service. In other words, running `npm run docker:up <service_name>` will perform the designated action for the specified `<service_name>` (where `<service_name>` corresponds to one of the services listed in [docker-compose.yml](docker/local/docker-compose.yml)). Furthermore, detailed instructions for each command can be accessed by running `npm run docker:<command> --help`.
+
+### Troubleshooting
+
+Port in use trying to create a new postgres instance? You'll want to see what process is running on your port with `sudo lsof -i tcp:<PORT>`. For Postgres,run `sudo lsof -i tcp:5432` in your terminal to see what is running on the port you are trying to use.
+
+It should return something like this:
+
+| COMMAND   | PID  | USER | ...more columns ->  |
+| --------- | ---- | ---- | ------------------- |
+| something | 1337 | user | ... more columns -> |
+
+Use the `PID` from the table to `sudo kill <PID>` in this case, `sudo kill 1337`. You can rerun the `lsof -i tcp:<PORT>` command again to verify the process has been killed. Once killed, you can try setup again via docker or self hosting.
