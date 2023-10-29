@@ -8,6 +8,11 @@ const typeDefs = gql`
     chip_stack: Float!
   }
 
+  type PokerGroup {
+    groupId: ID!
+    name: String!
+  }
+
   type Game {
     gameId: ID!
     name: String!
@@ -78,6 +83,8 @@ const typeDefs = gql`
       password: String
     ): UserUpdateResponse
     removeUser(userId: ID!): UserUpdateResponse
+
+    createPokerGroup(name: String!): PokerGroup
   }
 `;
 

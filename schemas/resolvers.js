@@ -1,6 +1,15 @@
 const { AuthenticationError } = require("apollo-server-express");
 const bcrypt = require("bcryptjs");
-const { User } = require("../models");
+const {
+  User,
+  UserGroupRole,
+  PokerGroup,
+  PokerGame,
+  PlayerAction,
+  PlayerHand,
+  Card,
+  Deck,
+} = require("../models");
 const { signToken } = require("../utils/auth");
 
 const resolvers = {
@@ -114,6 +123,33 @@ const resolvers = {
         return { message: "User successfully removed" };
       } catch (error) {
         console.error("Remove user error:", error);
+        throw error;
+      }
+    },
+
+    createPokerGroup: async (parent, { name }, context) => {
+      // Check if the user is authorized to create a group
+      if (!context.authUserId) {
+        throw new AuthenticationError(
+          "You must be logged in to create a group"
+        );
+      }
+
+      try {
+        const group = await PokerGroup.create({
+          name,
+        });
+
+        // You may want to associate the user who created the group as an admin
+        const userGroupRole = await UserGroupRole.create({
+          userId: context.authUserId,
+          groupId: group.groupId,
+          role: "admin",
+        });
+
+        return group;
+      } catch (error) {
+        console.error("Create poker group error:", error);
         throw error;
       }
     },
