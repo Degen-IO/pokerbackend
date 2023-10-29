@@ -6,7 +6,15 @@
   "scripts": {
     "start": "node server.js",
     "watch": "nodemon server.js",
-    "seed": "node seeders/seed.js"
+    "seed": "node seeders/seed.js",
+    "docker:up": "docker-compose -f ./docker/local/docker-compose.yml up",
+    "docker:down": "docker-compose -f ./docker/local/docker-compose.yml down",
+    "docker:logs": "docker-compose -f ./docker/local/docker-compose.yml logs -f --tail 200",
+    "docker:start": "docker-compose -f ./docker/local/docker-compose.yml start && npm run docker:logs",
+    "docker:stop": "docker-compose -f ./docker/local/docker-compose.yml stop",
+    "docker:restart": "docker-compose -f ./docker/local/docker-compose.yml restart",
+    "docker:rebuild": "docker-compose -f ./docker/local/docker-compose.yml up --force-recreate --build --no-start",
+    "docker:clean": "docker-compose -f ./docker/local/docker-compose.yml down --remove-orphans --rmi all"
   },
   "author": "",
   "license": "ISC",
