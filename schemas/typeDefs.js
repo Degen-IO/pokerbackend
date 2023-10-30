@@ -13,7 +13,6 @@ const typeDefs = gql`
     name: String!
     admin: User
     joinPassword: String
-    pendingMembers: [User]
   }
 
   type Game {
@@ -93,6 +92,7 @@ const typeDefs = gql`
     deletePokerGroup(groupId: ID!): String
 
     requestToJoinGroup(groupId: ID!, joinPassword: String!): PokerGroup
+    approvePendingMember(groupId: ID!, userId: ID!): PokerGroup
   }
 `;
 

@@ -268,17 +268,48 @@ const resolvers = {
           role: "pending",
         });
 
-        const pendingMembers = group.pendingMembers || [];
-        pendingMembers.push(user);
-        group.pendingMembers = pendingMembers;
-
-        await group.save();
-
         return group;
       } catch (error) {
         console.error("Request to join group error:", error);
         throw error;
       }
+    },
+    approvePendingMember: async (parent, { groupId, userId }, context) => {
+      // Check if the user is authorized to approve pending members (admin of the group)
+      const isAdmin = await UserGroupRole.findOne({
+        where: {
+          groupId,
+          userId: context.authUserId,
+          role: "admin",
+        },
+      });
+
+      if (!isAdmin) {
+        throw new AuthenticationError(
+          "You are not authorized to approve pending members for this group"
+        );
+      }
+
+      // Check if the user to be approved is a pending member of the group
+      const pendingMember = await UserGroupRole.findOne({
+        where: {
+          groupId,
+          userId,
+          role: "pending",
+        },
+      });
+
+      if (!pendingMember) {
+        throw new Error("User is not a pending member of this group");
+      }
+
+      // Approve the user by changing their role to "member"
+      pendingMember.role = "member";
+      await pendingMember.save();
+
+      // Fetch and return the updated group
+      const group = await PokerGroup.findByPk(groupId);
+      return group;
     },
   },
 };
