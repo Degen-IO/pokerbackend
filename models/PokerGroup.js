@@ -10,6 +10,10 @@ const getPokerGroupModel = (sequelize, { DataTypes }) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    joinPassword: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   });
 
   PokerGroup.associate = (models) => {

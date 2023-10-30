@@ -174,7 +174,7 @@ const resolvers = {
       }
     },
 
-    createPokerGroup: async (parent, { name }, context) => {
+    createPokerGroup: async (parent, { name, joinPassword }, context) => {
       // Check if the user is authorized to create a group
       if (!context.authUserId) {
         throw new AuthenticationError(
@@ -185,6 +185,7 @@ const resolvers = {
       try {
         const group = await PokerGroup.create({
           name,
+          joinPassword,
         });
 
         // You may want to associate the user who created the group as an admin
@@ -232,7 +233,7 @@ const resolvers = {
 
       return "Group successfully deleted";
     },
-    requestToJoinGroup: async (parent, { groupId }, context) => {
+    requestToJoinGroup: async (parent, { groupId, joinPassword }, context) => {
       if (!context.authUserId) {
         throw new AuthenticationError("You must be logged in to join a group");
       }
@@ -243,6 +244,10 @@ const resolvers = {
 
         if (!group) {
           throw new Error("Group not found");
+        }
+
+        if (group.joinPassword !== joinPassword) {
+          throw new Error("Incorrect group password");
         }
 
         const existingRole = await UserGroupRole.findOne({

@@ -12,6 +12,7 @@ const typeDefs = gql`
     groupId: ID!
     name: String!
     admin: User
+    joinPassword: String
     pendingMembers: [User]
   }
 
@@ -88,10 +89,10 @@ const typeDefs = gql`
     ): UserUpdateResponse
     removeUser(userId: ID!): UserUpdateResponse
 
-    createPokerGroup(name: String!): PokerGroup
+    createPokerGroup(name: String!, joinPassword: String!): PokerGroup
     deletePokerGroup(groupId: ID!): String
 
-    requestToJoinGroup(groupId: ID!): PokerGroup
+    requestToJoinGroup(groupId: ID!, joinPassword: String!): PokerGroup
   }
 `;
 
