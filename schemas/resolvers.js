@@ -21,6 +21,53 @@ const resolvers = {
     user: async (parent, { userId }) => {
       return User.findByPk(userId);
     },
+    pokerGroups: async (parent, { userId }) => {
+      // Fetch and return poker groups associated with the specified user ID
+      return PokerGroup.findAll({
+        include: [
+          {
+            model: User,
+            through: UserGroupRole,
+            where: { userId },
+          },
+        ],
+      });
+    },
+    pendingMembers: async (parent, { groupId }, context) => {
+      // Check if the user is authorized to view pending members
+      if (!context.authUserId) {
+        throw new AuthenticationError(
+          "You must be logged in to view pending members"
+        );
+      }
+
+      // Check if the user is an admin of the specified poker group
+      const isAdmin = await UserGroupRole.findOne({
+        where: {
+          groupId: groupId,
+          userId: context.authUserId,
+          role: "admin",
+        },
+      });
+
+      if (!isAdmin) {
+        throw new AuthenticationError(
+          "You are not authorized to view pending members for this group"
+        );
+      }
+
+      const pendingMembers = await User.findAll({
+        include: {
+          model: UserGroupRole, // Include UserGroupRole model
+          where: {
+            groupId: groupId,
+            role: "pending", // Filter for pending members
+          },
+        },
+      });
+
+      return pendingMembers;
+    },
   },
 
   Mutation: {
@@ -184,6 +231,49 @@ const resolvers = {
       await group.destroy();
 
       return "Group successfully deleted";
+    },
+    requestToJoinGroup: async (parent, { groupId }, context) => {
+      if (!context.authUserId) {
+        throw new AuthenticationError("You must be logged in to join a group");
+      }
+
+      try {
+        const user = await User.findByPk(context.authUserId);
+        const group = await PokerGroup.findByPk(groupId);
+
+        if (!group) {
+          throw new Error("Group not found");
+        }
+
+        const existingRole = await UserGroupRole.findOne({
+          where: {
+            userId: user.userId,
+            groupId: group.groupId,
+          },
+        });
+
+        if (existingRole) {
+          throw new Error("You are already a member of this group.");
+        }
+
+        // Create a new UserGroupRole entry for the user with the "pending" role
+        await UserGroupRole.create({
+          userId: user.userId,
+          groupId: group.groupId,
+          role: "pending",
+        });
+
+        const pendingMembers = group.pendingMembers || [];
+        pendingMembers.push(user);
+        group.pendingMembers = pendingMembers;
+
+        await group.save();
+
+        return group;
+      } catch (error) {
+        console.error("Request to join group error:", error);
+        throw error;
+      }
     },
   },
 };

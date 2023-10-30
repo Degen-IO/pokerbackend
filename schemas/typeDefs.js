@@ -11,6 +11,8 @@ const typeDefs = gql`
   type PokerGroup {
     groupId: ID!
     name: String!
+    admin: User
+    pendingMembers: [User]
   }
 
   type Game {
@@ -71,6 +73,8 @@ const typeDefs = gql`
   type Query {
     users: [User]!
     user(userId: ID!): User
+    pokerGroups(userId: ID!): [PokerGroup]
+    pendingMembers(groupId: ID!): [User]
   }
 
   type Mutation {
@@ -86,6 +90,8 @@ const typeDefs = gql`
 
     createPokerGroup(name: String!): PokerGroup
     deletePokerGroup(groupId: ID!): String
+
+    requestToJoinGroup(groupId: ID!): PokerGroup
   }
 `;
 
