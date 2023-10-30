@@ -311,6 +311,40 @@ const resolvers = {
       const group = await PokerGroup.findByPk(groupId);
       return group;
     },
+    removeGroupMember: async (parent, { groupId, userId }, context) => {
+      // Check if the user is authorized to remove a member (admin of the group)
+      const isAdmin = await UserGroupRole.findOne({
+        where: {
+          groupId,
+          userId: context.authUserId,
+          role: "admin",
+        },
+      });
+
+      if (!isAdmin) {
+        throw new AuthenticationError(
+          "You are not authorized to remove members from this group"
+        );
+      }
+
+      // Check if the user to be removed is a member of the group
+      const member = await UserGroupRole.findOne({
+        where: {
+          groupId,
+          userId,
+          role: "member",
+        },
+      });
+
+      if (!member) {
+        throw new Error("User is not a member of this group");
+      }
+
+      // Remove the user from the group
+      await member.destroy();
+
+      return "Member successfully removed from the group";
+    },
   },
 };
 

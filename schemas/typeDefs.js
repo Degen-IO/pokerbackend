@@ -93,6 +93,7 @@ const typeDefs = gql`
 
     requestToJoinGroup(groupId: ID!, joinPassword: String!): PokerGroup
     approvePendingMember(groupId: ID!, userId: ID!): PokerGroup
+    removeGroupMember(groupId: ID!, userId: ID!): String
   }
 `;
 
