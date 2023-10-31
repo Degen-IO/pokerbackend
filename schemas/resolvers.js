@@ -1,4 +1,6 @@
 const { AuthenticationError } = require("apollo-server-express");
+const { Op } = require("sequelize");
+
 const bcrypt = require("bcryptjs");
 const {
   User,
@@ -23,16 +25,38 @@ const resolvers = {
     },
     pokerGroups: async (parent, { userId }) => {
       // Fetch and return poker groups associated with the specified user ID
-      const parsedId = parseInt(userId);
-      return PokerGroup.findAll({
-        include: [
-          {
-            model: User,
-            through: UserGroupRole,
-            where: { parsedId },
+      try {
+        const user = await User.findByPk(userId);
+        if (!user) {
+          throw new Error("User not found");
+        }
+
+        // Use the UserGroupRole model to find groups where the user is an admin or member
+        const userGroupRoles = await UserGroupRole.findAll({
+          where: {
+            userId,
+            role: {
+              [Op.in]: ["admin", "member"],
+            },
           },
-        ],
-      });
+        });
+
+        const groupIds = userGroupRoles.map((role) => role.groupId);
+
+        // Use the groupIds to fetch the PokerGroups associated with the user
+        const pokerGroups = await PokerGroup.findAll({
+          where: {
+            groupId: {
+              [Op.in]: groupIds,
+            },
+          },
+        });
+
+        return pokerGroups;
+      } catch (error) {
+        console.error("Error fetching poker groups:", error);
+        throw error;
+      }
     },
     pendingMembers: async (parent, { groupId }, context) => {
       // Check if the user is authorized to view pending members
