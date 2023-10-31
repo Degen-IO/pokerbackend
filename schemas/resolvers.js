@@ -312,7 +312,12 @@ const resolvers = {
       return group;
     },
     removeGroupMember: async (parent, { groupId, userId }, context) => {
-      // Check if the user is authorized to remove a member (admin of the group)
+      // Check if the user is authorized to remove a member (admin of the group) or is the user themselves
+      console.log("CONTEXTID:" + context.authUserId);
+      console.log("USERID" + userId);
+      const userIdInt = parseInt(userId);
+      const parsedContextId = parseInt(context.authUserId);
+
       const isAdmin = await UserGroupRole.findOne({
         where: {
           groupId,
@@ -321,7 +326,9 @@ const resolvers = {
         },
       });
 
-      if (!isAdmin) {
+      const isSelfRemoval = parsedContextId === userIdInt;
+
+      if (!isAdmin && !isSelfRemoval) {
         throw new AuthenticationError(
           "You are not authorized to remove members from this group"
         );
@@ -335,6 +342,10 @@ const resolvers = {
           role: "member",
         },
       });
+
+      if (isSelfRemoval && isAdmin) {
+        throw new Error("An admin cannot remove themselves from the group");
+      }
 
       if (!member) {
         throw new Error("User is not a member of this group");
