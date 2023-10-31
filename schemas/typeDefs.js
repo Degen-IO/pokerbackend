@@ -75,6 +75,7 @@ const typeDefs = gql`
     user(userId: ID!): User
     pokerGroups(userId: ID!): [PokerGroup]
     pendingMembers(groupId: ID!): [User]
+    membersOfGroup(groupId: ID!): [User]
   }
 
   type Mutation {

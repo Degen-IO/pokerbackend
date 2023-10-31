@@ -23,12 +23,13 @@ const resolvers = {
     },
     pokerGroups: async (parent, { userId }) => {
       // Fetch and return poker groups associated with the specified user ID
+      const parsedId = parseInt(userId);
       return PokerGroup.findAll({
         include: [
           {
             model: User,
             through: UserGroupRole,
-            where: { userId },
+            where: { parsedId },
           },
         ],
       });
@@ -67,6 +68,22 @@ const resolvers = {
       });
 
       return pendingMembers;
+    },
+    membersOfGroup: async (parent, { groupId }) => {
+      // Fetch and return members of the specified group
+      const members = await User.findAll({
+        include: [
+          {
+            model: UserGroupRole,
+            where: {
+              groupId,
+              role: ["member", "admin"],
+            },
+          },
+        ],
+      });
+
+      return members;
     },
   },
 
@@ -313,8 +330,6 @@ const resolvers = {
     },
     removeGroupMember: async (parent, { groupId, userId }, context) => {
       // Check if the user is authorized to remove a member (admin of the group) or is the user themselves
-      console.log("CONTEXTID:" + context.authUserId);
-      console.log("USERID" + userId);
       const userIdInt = parseInt(userId);
       const parsedContextId = parseInt(context.authUserId);
 
