@@ -5,5 +5,5 @@ EXPOSE 3666
 WORKDIR /app
 
 USER node
-
-CMD [ "node", "server.js" ]
+# Runs this for local development
+CMD ["npm", "run", "watch"]
