@@ -1,6 +1,9 @@
 const { gql } = require("apollo-server-express");
 
 const typeDefs = gql`
+  scalar Date
+  scalar Time
+
   type User {
     userId: ID!
     name: String!
@@ -15,16 +18,72 @@ const typeDefs = gql`
     joinPassword: String
   }
 
-  type Game {
+  type CashGame {
     gameId: ID!
     name: String!
     status: GameStatus!
-    deck: Deck!
+    startDate: Date!
+    startTime: Time!
+    playersPerTable: Int!
+    startingChips: Float!
+    blindsSmall: Float!
+    blindsBig: Float!
+    duration: Duration!
+  }
+
+  type TournamentGame {
+    gameId: ID!
+    name: String!
+    status: GameStatus!
+    startDate: Date!
+    startTime: Time!
+    playersPerTable: Int!
+    numberOfRebuys: Int
+    rebuyPeriod: RebuyPeriod!
+    addOn: Boolean!
+    startingChips: Float!
+    gameSpeed: GameSpeed!
+    lateRegistrationDuration: LateRegistrationDuration!
+  }
+
+  extend type PokerGroup {
+    gameStyle: String
   }
 
   enum GameStatus {
-    IN_PROGRESS
-    FINISHED
+    waiting
+    ongoing
+    finished
+  }
+  enum RebuyPeriod {
+    _30min
+    _60min
+    _90min
+    _120min
+    none
+  }
+
+  enum GameSpeed {
+    slow
+    medium
+    fast
+    ridiculous
+  }
+
+  enum Duration {
+    _1hr
+    _2hr
+    _3hr
+    _4hr
+    unlimited
+    manual
+  }
+
+  enum LateRegistrationDuration {
+    _30min
+    _60min
+    _90min
+    none
   }
 
   type Card {
@@ -95,6 +154,31 @@ const typeDefs = gql`
     requestToJoinGroup(groupId: ID!, joinPassword: String!): PokerGroup
     approvePendingMember(groupId: ID!, userId: ID!): PokerGroup
     removeGroupMember(groupId: ID!, userId: ID!): String
+
+    createCashGame(
+      groupId: ID!
+      name: String!
+      startDate: Date!
+      startTime: Time!
+      playersPerTable: Int!
+      startingChips: Float!
+      blindsSmall: Float!
+      blindsBig: Float!
+      duration: Duration!
+    ): CashGame
+
+    createTournamentGame(
+      groupId: ID!
+      name: String!
+      startDate: Date!
+      startTime: Time!
+      playersPerTable: Int!
+      numberOfRebuys: Int
+      rebuyPeriod: RebuyPeriod!
+      startingChips: Float!
+      gameSpeed: GameSpeed!
+      lateRegistrationDuration: LateRegistrationDuration!
+    ): TournamentGame
   }
 `;
 

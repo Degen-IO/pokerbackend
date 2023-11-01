@@ -1,4 +1,5 @@
 const { AuthenticationError } = require("apollo-server-express");
+const { validateStartTime } = require("../utils/validateStartTime");
 const { Op } = require("sequelize");
 
 const bcrypt = require("bcryptjs");
@@ -6,7 +7,8 @@ const {
   User,
   UserGroupRole,
   PokerGroup,
-  PokerGame,
+  CashGame,
+  TournamentGame,
   PlayerAction,
   PlayerHand,
   Card,
@@ -394,6 +396,117 @@ const resolvers = {
       await member.destroy();
 
       return "Member successfully removed from the group";
+    },
+
+    createCashGame: async (parent, args, context) => {
+      try {
+        // Check if the user is authorized to create a Cash Game (e.g., user is a member or admin of the group)
+        // You can use context.authUserId to check the user's authorization.
+
+        if (!context.authUserId) {
+          throw new AuthenticationError(
+            "You must be logged in to create a game"
+          );
+        }
+
+        // Find the group associated with the game
+        const group = await PokerGroup.findByPk(args.groupId);
+
+        if (!group) {
+          throw new Error("Group not found");
+        }
+
+        // Check if the user is a member or admin of the group
+        const userRole = await UserGroupRole.findOne({
+          where: {
+            groupId: args.groupId,
+            userId: context.authUserId,
+            role: ["admin", "member"],
+          },
+        });
+
+        if (!userRole) {
+          throw new AuthenticationError(
+            "You are not authorized to create a game in this group"
+          );
+        }
+
+        // Validate the start time
+        await validateStartTime(args.startDate, args.startTime);
+
+        // Create the Cash Game using the args passed in, and associate it with the specified group.
+        // You may also associate the user who is creating the game.
+
+        const cashGame = await CashGame.create({
+          name: args.name,
+          status: "waiting",
+          startDate: args.startDate,
+          startTime: args.startTime,
+          playersPerTable: args.playersPerTable,
+          startingChips: args.startingChips,
+          blindsSmall: args.blindsSmall,
+          blindsBig: args.blindsBig,
+          duration: args.duration,
+          groupId: args.groupId, // Associate with the group
+          userId: context.authUserId, // Associate with the user
+        });
+
+        return cashGame;
+      } catch (error) {
+        console.error("Error while creating CashGame:", error.message);
+        throw error;
+      }
+    },
+
+    createTournamentGame: async (parent, args, context) => {
+      // Check if the user is authorized to create a Tournament Game (e.g., user is a member or admin of the group)
+      // You can use context.authUserId to check the user's authorization.
+
+      if (!context.authUserId) {
+        throw new AuthenticationError("You must be logged in to create a game");
+      }
+
+      // Find the group associated with the game
+      const group = await PokerGroup.findByPk(args.groupId);
+
+      if (!group) {
+        throw new Error("Group not found");
+      }
+
+      // Check if the user is a member or admin of the group
+      const userRole = await UserGroupRole.findOne({
+        where: {
+          groupId: args.groupId,
+          userId: context.authUserId,
+          role: ["admin", "member"],
+        },
+      });
+
+      if (!userRole) {
+        throw new AuthenticationError(
+          "You are not authorized to create a game in this group"
+        );
+      }
+
+      // Create the Tournament Game using the args passed in, and associate it with the specified group.
+      // You may also associate the user who is creating the game.
+
+      const tournamentGame = await TournamentGame.create({
+        name: args.name,
+        status: "waiting",
+        startDate: args.startDate,
+        startTime: args.startTime,
+        playersPerTable: args.playersPerTable,
+        numberOfRebuys: args.numberOfRebuys,
+        rebuyPeriod: args.rebuyPeriod,
+        startingChips: args.startingChips,
+        gameSpeed: args.gameSpeed,
+        lateRegistrationDuration: args.lateRegistrationDuration,
+        groupId: args.groupId, // Associate with the group
+        userId: context.authUserId, // Associate with the user
+      });
+
+      return tournamentGame;
     },
   },
 };

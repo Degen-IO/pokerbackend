@@ -51,8 +51,12 @@ const getUserModel = (sequelize, { DataTypes }) => {
       foreignKey: "userId",
     });
 
-    // User has many PokerGame associations
-    User.hasMany(models.PokerGame, {
+    // User has many CashGame associations
+    User.hasMany(models.CashGame, {
+      foreignKey: "userId",
+    });
+    // User has many TournamentGame associations
+    User.hasMany(models.TournamentGame, {
       foreignKey: "userId",
     });
 
