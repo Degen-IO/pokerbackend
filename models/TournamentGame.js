@@ -1,5 +1,3 @@
-const { validateStartTime } = require("../utils/validateStartTime");
-
 const getTournamentGameModel = (sequelize, { DataTypes }) => {
   const TournamentGame = sequelize.define("tournamentGame", {
     gameId: {
@@ -19,14 +17,21 @@ const getTournamentGameModel = (sequelize, { DataTypes }) => {
       type: DataTypes.ENUM("waiting", "ongoing", "finished"),
       allowNull: false,
     },
-    startDate: {
+
+    startDateTime: {
       type: DataTypes.DATE,
       allowNull: false,
+      validate: {
+        isFuture: function (value) {
+          if (new Date(value) <= new Date()) {
+            throw new Error(
+              "Start date and time must be at least 5min in the future."
+            );
+          }
+        },
+      },
     },
-    startTime: {
-      type: DataTypes.TIME,
-      allowNull: false,
-    },
+
     playersPerTable: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -51,7 +56,7 @@ const getTournamentGameModel = (sequelize, { DataTypes }) => {
       allowNull: false,
     },
     addOn: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.ENUM("yes", "no"),
       allowNull: false,
     },
     startingChips: {
@@ -79,9 +84,6 @@ const getTournamentGameModel = (sequelize, { DataTypes }) => {
 
     TournamentGame.hasMany(models.BlindLevel, { foreignKey: "gameId" });
   };
-
-  //validate time before game creation
-  TournamentGame.addHook("beforeValidate", "checkStartTime", validateStartTime);
 
   return TournamentGame;
 };

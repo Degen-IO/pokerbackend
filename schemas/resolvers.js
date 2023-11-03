@@ -1,5 +1,4 @@
 const { AuthenticationError } = require("apollo-server-express");
-const { validateStartTime } = require("../utils/validateStartTime");
 const { Op } = require("sequelize");
 
 const bcrypt = require("bcryptjs");
@@ -431,8 +430,17 @@ const resolvers = {
           );
         }
 
-        // Validate the start time
-        await validateStartTime(args.startDate, args.startTime);
+        // Parse startDateTime and calculate the minimum allowed datetime (5 minutes in the future)
+        const startDateTime = new Date(args.startDateTime);
+        const minAllowedDateTime = new Date();
+        minAllowedDateTime.setMinutes(minAllowedDateTime.getMinutes() + 5);
+
+        // Check if startDateTime is at least 5 minutes in the future
+        if (startDateTime <= minAllowedDateTime) {
+          throw new Error(
+            "Start date and time must be at least 5 minutes in the future."
+          );
+        }
 
         // Create the Cash Game using the args passed in, and associate it with the specified group.
         // You may also associate the user who is creating the game.
@@ -440,8 +448,7 @@ const resolvers = {
         const cashGame = await CashGame.create({
           name: args.name,
           status: "waiting",
-          startDate: args.startDate,
-          startTime: args.startTime,
+          startDateTime: args.startDateTime,
           playersPerTable: args.playersPerTable,
           startingChips: args.startingChips,
           blindsSmall: args.blindsSmall,
@@ -488,17 +495,29 @@ const resolvers = {
         );
       }
 
+      // Parse startDateTime and calculate the minimum allowed datetime (5 minutes in the future)
+      const startDateTime = new Date(args.startDateTime);
+      const minAllowedDateTime = new Date();
+      minAllowedDateTime.setMinutes(minAllowedDateTime.getMinutes() + 5);
+
+      // Check if startDateTime is at least 5 minutes in the future
+      if (startDateTime <= minAllowedDateTime) {
+        throw new Error(
+          "Start date and time must be at least 5 minutes in the future."
+        );
+      }
+
       // Create the Tournament Game using the args passed in, and associate it with the specified group.
       // You may also associate the user who is creating the game.
 
       const tournamentGame = await TournamentGame.create({
         name: args.name,
         status: "waiting",
-        startDate: args.startDate,
-        startTime: args.startTime,
+        startDateTime: args.startDateTime,
         playersPerTable: args.playersPerTable,
         numberOfRebuys: args.numberOfRebuys,
         rebuyPeriod: args.rebuyPeriod,
+        addOn: args.addOn,
         startingChips: args.startingChips,
         gameSpeed: args.gameSpeed,
         lateRegistrationDuration: args.lateRegistrationDuration,

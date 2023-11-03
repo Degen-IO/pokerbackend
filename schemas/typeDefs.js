@@ -1,9 +1,6 @@
 const { gql } = require("apollo-server-express");
 
 const typeDefs = gql`
-  scalar Date
-  scalar Time
-
   type User {
     userId: ID!
     name: String!
@@ -14,16 +11,14 @@ const typeDefs = gql`
   type PokerGroup {
     groupId: ID!
     name: String!
-    admin: User
-    joinPassword: String
+    joinPassword: String!
   }
 
   type CashGame {
     gameId: ID!
     name: String!
     status: GameStatus!
-    startDate: Date!
-    startTime: Time!
+    startDateTime: String!
     playersPerTable: Int!
     startingChips: Float!
     blindsSmall: Float!
@@ -35,19 +30,34 @@ const typeDefs = gql`
     gameId: ID!
     name: String!
     status: GameStatus!
-    startDate: Date!
-    startTime: Time!
+    startDateTime: String!
     playersPerTable: Int!
     numberOfRebuys: Int
     rebuyPeriod: RebuyPeriod!
-    addOn: Boolean!
+    addOn: AddOn!
     startingChips: Float!
     gameSpeed: GameSpeed!
     lateRegistrationDuration: LateRegistrationDuration!
   }
 
-  extend type PokerGroup {
-    gameStyle: String
+  type Card {
+    rank: Rank!
+    suit: Suit!
+  }
+
+  type Deck {
+    id: ID!
+    cards: [Card!]!
+  }
+
+  type UserUpdateResponse {
+    message: String!
+    user: User
+  }
+
+  type Auth {
+    token: ID!
+    user: User
   }
 
   enum GameStatus {
@@ -86,9 +96,9 @@ const typeDefs = gql`
     none
   }
 
-  type Card {
-    rank: Rank!
-    suit: Suit!
+  enum AddOn {
+    yes
+    no
   }
 
   enum Rank {
@@ -112,21 +122,6 @@ const typeDefs = gql`
     DIAMONDS
     HEARTS
     SPADES
-  }
-
-  type Deck {
-    id: ID!
-    cards: [Card!]!
-  }
-
-  type UserUpdateResponse {
-    message: String!
-    user: User
-  }
-
-  type Auth {
-    token: ID!
-    user: User
   }
 
   type Query {
@@ -158,8 +153,7 @@ const typeDefs = gql`
     createCashGame(
       groupId: ID!
       name: String!
-      startDate: Date!
-      startTime: Time!
+      startDateTime: String!
       playersPerTable: Int!
       startingChips: Float!
       blindsSmall: Float!
@@ -170,11 +164,11 @@ const typeDefs = gql`
     createTournamentGame(
       groupId: ID!
       name: String!
-      startDate: Date!
-      startTime: Time!
+      startDateTime: String!
       playersPerTable: Int!
       numberOfRebuys: Int
       rebuyPeriod: RebuyPeriod!
+      addOn: AddOn!
       startingChips: Float!
       gameSpeed: GameSpeed!
       lateRegistrationDuration: LateRegistrationDuration!

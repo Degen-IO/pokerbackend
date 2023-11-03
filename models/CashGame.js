@@ -1,5 +1,3 @@
-const { validateStartTime } = require("../utils/validateStartTime");
-
 const getCashGameModel = (sequelize, { DataTypes }) => {
   const CashGame = sequelize.define("cashGame", {
     gameId: {
@@ -19,14 +17,21 @@ const getCashGameModel = (sequelize, { DataTypes }) => {
       type: DataTypes.ENUM("waiting", "ongoing", "finished"),
       allowNull: false,
     },
-    startDate: {
+
+    startDateTime: {
       type: DataTypes.DATE,
       allowNull: false,
+      validate: {
+        isFuture: function (value) {
+          if (new Date(value) <= new Date()) {
+            throw new Error(
+              "Start date and time must be at least 5min in the future."
+            );
+          }
+        },
+      },
     },
-    startTime: {
-      type: DataTypes.TIME,
-      allowNull: false,
-    },
+
     playersPerTable: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -73,9 +78,6 @@ const getCashGameModel = (sequelize, { DataTypes }) => {
 
     CashGame.hasMany(models.PlayerAction, { foreignKey: "gameId" });
   };
-
-  //validate time before game creation
-  CashGame.addHook("beforeCreate", "checkStartTime", validateStartTime);
 
   return CashGame;
 };
