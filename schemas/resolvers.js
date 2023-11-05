@@ -527,6 +527,54 @@ const resolvers = {
 
       return tournamentGame;
     },
+    deleteGame: async (parent, { gameId, gameType }, context) => {
+      // Check if the user is authenticated
+      if (!context.authUserId) {
+        throw new AuthenticationError("You must be logged in to delete a game");
+      }
+
+      // Find the game by ID
+      let game;
+
+      if (gameType === "cash") {
+        game = await CashGame.findByPk(gameId);
+      } else if (gameType === "tournament") {
+        game = await TournamentGame.findByPk(gameId);
+      } else {
+        throw new Error("Invalid game type");
+      }
+
+      if (!game) {
+        throw new Error("Game not found");
+      }
+
+      // Check if the user is the creator of the game or an admin of the group
+      const isAdmin = await UserGroupRole.findOne({
+        where: {
+          groupId: game.groupId,
+          userId: context.authUserId,
+          role: "admin",
+        },
+      });
+
+      if (game.userId !== context.authUserId && !isAdmin) {
+        throw new AuthenticationError(
+          "You are not authorized to delete this game"
+        );
+      }
+
+      // If it's a tournament game, check if its status is "waiting"
+      if (gameType === "tournament" && game.status !== "waiting") {
+        throw new Error(
+          "Tournament game can only be deleted if its status is 'waiting'"
+        );
+      }
+
+      // Delete the game
+      await game.destroy();
+
+      return "Game successfully deleted";
+    },
   },
 };
 

@@ -65,6 +65,11 @@ const typeDefs = gql`
     ongoing
     finished
   }
+
+  enum GameType {
+    cash
+    tournament
+  }
   enum RebuyPeriod {
     _30min
     _60min
@@ -173,6 +178,8 @@ const typeDefs = gql`
       gameSpeed: GameSpeed!
       lateRegistrationDuration: LateRegistrationDuration!
     ): TournamentGame
+
+    deleteGame(gameId: ID!, gameType: GameType!): String
   }
 `;
 
