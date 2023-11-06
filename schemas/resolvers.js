@@ -430,15 +430,25 @@ const resolvers = {
           );
         }
 
-        // Parse startDateTime and calculate the minimum allowed datetime (5 minutes in the future)
+        // Parse startDateTime and calculate the maximum allowed datetime (1 year in the future)
         const startDateTime = new Date(args.startDateTime);
+        const maxAllowedDateTime = new Date();
+        maxAllowedDateTime.setFullYear(maxAllowedDateTime.getFullYear() + 1);
+
+        // Calculate the minimum allowed datetime (5 minutes in the future)
         const minAllowedDateTime = new Date();
         minAllowedDateTime.setMinutes(minAllowedDateTime.getMinutes() + 5);
 
-        // Check if startDateTime is at least 5 minutes in the future
+        // Check if startDateTime is within the allowed range (between 5 minutes and 1 year in the future)
         if (startDateTime <= minAllowedDateTime) {
           throw new Error(
             "Start date and time must be at least 5 minutes in the future."
+          );
+        }
+
+        if (startDateTime > maxAllowedDateTime) {
+          throw new Error(
+            "Start date and time can't be more than 1 year in the future."
           );
         }
 
@@ -495,15 +505,25 @@ const resolvers = {
         );
       }
 
-      // Parse startDateTime and calculate the minimum allowed datetime (5 minutes in the future)
+      // Parse startDateTime and calculate the maximum allowed datetime (1 year in the future)
       const startDateTime = new Date(args.startDateTime);
+      const maxAllowedDateTime = new Date();
+      maxAllowedDateTime.setFullYear(maxAllowedDateTime.getFullYear() + 1);
+
+      // Calculate the minimum allowed datetime (5 minutes in the future)
       const minAllowedDateTime = new Date();
       minAllowedDateTime.setMinutes(minAllowedDateTime.getMinutes() + 5);
 
-      // Check if startDateTime is at least 5 minutes in the future
+      // Check if startDateTime is within the allowed range (between 5 minutes and 1 year in the future)
       if (startDateTime <= minAllowedDateTime) {
         throw new Error(
           "Start date and time must be at least 5 minutes in the future."
+        );
+      }
+
+      if (startDateTime > maxAllowedDateTime) {
+        throw new Error(
+          "Start date and time can't be more than 1 year in the future."
         );
       }
 

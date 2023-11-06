@@ -32,7 +32,7 @@ const typeDefs = gql`
     status: GameStatus!
     startDateTime: String!
     playersPerTable: Int!
-    numberOfRebuys: Int
+    numberOfRebuys: Int!
     rebuyPeriod: RebuyPeriod!
     addOn: AddOn!
     startingChips: Float!
@@ -171,7 +171,7 @@ const typeDefs = gql`
       name: String!
       startDateTime: String!
       playersPerTable: Int!
-      numberOfRebuys: Int
+      numberOfRebuys: Int!
       rebuyPeriod: RebuyPeriod!
       addOn: AddOn!
       startingChips: Float!
