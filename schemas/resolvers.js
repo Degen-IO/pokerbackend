@@ -110,6 +110,71 @@ const resolvers = {
 
       return members;
     },
+    cashGamesInGroup: async (parent, { groupId }, context) => {
+      // Check if the user is authorized to view Cash Games in the group
+      if (!context.authUserId) {
+        throw new AuthenticationError(
+          "You must be logged in to view Cash Games in the group"
+        );
+      }
+
+      // Check if the user is a member or admin of the specified group
+      const userRole = await UserGroupRole.findOne({
+        where: {
+          groupId,
+          userId: context.authUserId,
+          role: ["admin", "member"],
+        },
+      });
+
+      if (!userRole) {
+        throw new AuthenticationError(
+          "You are not authorized to view Cash Games in this group"
+        );
+      }
+
+      // Fetch and return Cash Games associated with the specified group
+      const cashGames = await CashGame.findAll({
+        where: {
+          groupId,
+        },
+      });
+
+      return cashGames;
+    },
+
+    tournamentGamesInGroup: async (parent, { groupId }, context) => {
+      // Check if the user is authorized to view Tournament Games in the group
+      if (!context.authUserId) {
+        throw new AuthenticationError(
+          "You must be logged in to view Tournament Games in the group"
+        );
+      }
+
+      // Check if the user is a member or admin of the specified group
+      const userRole = await UserGroupRole.findOne({
+        where: {
+          groupId,
+          userId: context.authUserId,
+          role: ["admin", "member"],
+        },
+      });
+
+      if (!userRole) {
+        throw new AuthenticationError(
+          "You are not authorized to view Tournament Games in this group"
+        );
+      }
+
+      // Fetch and return Tournament Games associated with the specified group
+      const tournamentGames = await TournamentGame.findAll({
+        where: {
+          groupId,
+        },
+      });
+
+      return tournamentGames;
+    },
   },
 
   Mutation: {

@@ -135,6 +135,8 @@ const typeDefs = gql`
     pokerGroups(userId: ID!): [PokerGroup]
     pendingMembers(groupId: ID!): [User]
     membersOfGroup(groupId: ID!): [User]
+    cashGamesInGroup(groupId: Int!): [CashGame!]!
+    tournamentGamesInGroup(groupId: Int!): [TournamentGame!]!
   }
 
   type Mutation {
