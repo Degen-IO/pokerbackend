@@ -1,5 +1,9 @@
 # HomeGame - Backend
 
+## Project Description
+
+This is an API for `HomeGame`, a Texas Hold Em poker platform built with the flexibility of a house game in mind. Players can create groups to being hosting cash games or tournaments within their group. Admins in a group may schedule games in advance and customize a number of game attributes like game speed, number of players per table, add-ons, etc.
+
 ## Setup
 
 1. Run `npm i`
@@ -15,9 +19,16 @@ To prepare the development environment, you need files containing sensitive info
 
 ## Self Hosted
 
-You may run on your machine. Make sure you have postgres and pgadmin installed locally.
+You may run this on your local machine.
 
-Replace the default `POSTGRES_HOST=db` (for use with docker containers) with `POSTGRES_HOST=localhost` and run `npm start` or `npm run watch` for development.
+- Make sure you have [postgres](https://www.postgresql.org/download/) and [pgadmin](https://www.pgadmin.org/download/) installed locally, as well as a local user setup for PGAdmin.
+- Input the following variables from your local enviroment in `.env`:
+  - `POSTGRES_HOST` => localhost (replace the default of db)
+  - `POSTGRES_USER`
+  - `POSTGRES_PASSWORD`
+- In your local instance of PGAdmin, you will need to follow steps 6-9 in the [docker instructions](#run-the-app-using-docker)
+- Seed the database with `npm run seed`.
+- Run the local API with `npm start` or `npm run watch`.
 
 ### Docker
 
@@ -29,19 +40,22 @@ We employ Docker to start several containers within your local environment, stre
 
 ---
 
-1. Download and install docker.
-2. Download and install docker-compose.
-3. Create .env file as specified [here](#env-setup).
-4. Run `npm run docker:up` to download, build, and start containers defined in docker-compose.yml. Note: terminating this command will stop the containers. Add -d to detach and run in background.
-5. After this, docker will be running the backend, database, and pgadmin.
-6. Go to the `pgadmin` container and select the container action `Open in Browser`. Use the `#PGADMIN` credentials set from your `.env`. You will need to setup the database.
-7. Click `Add New Server`. You will now be able to input your settings to create the database. In the General tab, choose whatever name you like.
-8. In the Connection tab, input the following from your enviroment variables:
+1. You need to have Docker Engine and Docker Compose on your machine. You can either:
+
+- Install [Docker Engine](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) as standalone binaries
+- Install [Docker Desktop](https://docs.docker.com/desktop/) which includes both Docker Engine and Docker Compose
+
+2. Create .env file as specified [here](#env-setup).
+3. Run `npm run docker:up` to download, build, and start containers defined in docker-compose.yml. Note: terminating this command will stop the containers. Add -d to detach and run in background.
+4. After this, docker will be running the backend, database, and pgadmin.
+5. Go to the `pgadmin` container and select the container action `Open in Browser`. Use the `#PGADMIN` credentials set from your `.env`. You will need to setup the database.
+6. Click `Add New Server`. You will now be able to input your settings to create the database. In the General tab, choose whatever name you like.
+7. In the Connection tab, input the following from your enviroment variables:
    - The Host Name / Address => `POSTGRES_HOST`
    - Username => `POSTGRES_USER`
    - Password => `POSTGRES_PASSWORD`
-9. Open up Docker and go to the CLI for backend container actions.
-10. Run `npm run seed` to seed the tables in the database and you've up and running!
+8. Open up Docker and go to the CLI for backend container actions.
+9. Run `npm run seed` to seed the tables in the database and you've up and running!
 
 ### Docker Scripts
 
