@@ -56,7 +56,7 @@ const getTournamentGameModel = (sequelize, { DataTypes }) => {
       allowNull: false,
     },
     addOn: {
-      type: DataTypes.ENUM("yes", "no"),
+      type: DataTypes.BOOLEAN,
       allowNull: false,
     },
     startingChips: {

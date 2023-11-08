@@ -34,7 +34,7 @@ const typeDefs = gql`
     playersPerTable: Int!
     numberOfRebuys: Int!
     rebuyPeriod: RebuyPeriod!
-    addOn: AddOn!
+    addOn: Boolean!
     startingChips: Float!
     gameSpeed: GameSpeed!
     lateRegistrationDuration: LateRegistrationDuration!
@@ -101,11 +101,6 @@ const typeDefs = gql`
     none
   }
 
-  enum AddOn {
-    yes
-    no
-  }
-
   enum Rank {
     TWO
     THREE
@@ -135,8 +130,8 @@ const typeDefs = gql`
     pokerGroups(userId: ID!): [PokerGroup]
     pendingMembers(groupId: ID!): [User]
     membersOfGroup(groupId: ID!): [User]
-    cashGamesInGroup(groupId: Int!): [CashGame!]!
-    tournamentGamesInGroup(groupId: Int!): [TournamentGame!]!
+    cashGamesInGroup(groupId: ID!): [CashGame!]!
+    tournamentGamesInGroup(groupId: ID!): [TournamentGame!]!
   }
 
   type Mutation {
@@ -175,7 +170,7 @@ const typeDefs = gql`
       playersPerTable: Int!
       numberOfRebuys: Int!
       rebuyPeriod: RebuyPeriod!
-      addOn: AddOn!
+      addOn: Boolean!
       startingChips: Float!
       gameSpeed: GameSpeed!
       lateRegistrationDuration: LateRegistrationDuration!
