@@ -20,7 +20,14 @@ const getPlayerActionModel = (sequelize, { DataTypes }) => {
   // Define associations with other models, e.g., User, PokerGame
   PlayerAction.associate = (models) => {
     PlayerAction.belongsTo(models.User, { foreignKey: "userId" });
-    PlayerAction.belongsTo(models.PokerGame, { foreignKey: "gameId" });
+    PlayerAction.belongsTo(models.CashGame, {
+      foreignKey: "gameId",
+      as: "cashGame",
+    });
+    PlayerAction.belongsTo(models.TournamentGame, {
+      foreignKey: "gameId",
+      as: "tournamentGame",
+    });
   };
 
   return PlayerAction;

@@ -7,7 +7,7 @@ const getUserGroupRoleModel = (sequelize, { DataTypes }) => {
       autoIncrement: true,
     },
     role: {
-      type: DataTypes.ENUM("admin", "member"), // Define valid role values
+      type: DataTypes.ENUM("admin", "member", "pending"), // Define valid role values
       allowNull: false,
     },
   });

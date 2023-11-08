@@ -8,21 +8,97 @@ const typeDefs = gql`
     chip_stack: Float!
   }
 
-  type Game {
+  type PokerGroup {
+    groupId: ID!
+    name: String!
+    joinPassword: String!
+  }
+
+  type CashGame {
     gameId: ID!
     name: String!
     status: GameStatus!
-    deck: Deck!
+    startDateTime: String!
+    playersPerTable: Int!
+    startingChips: Float!
+    blindsSmall: Float!
+    blindsBig: Float!
+    duration: Duration!
   }
 
-  enum GameStatus {
-    IN_PROGRESS
-    FINISHED
+  type TournamentGame {
+    gameId: ID!
+    name: String!
+    status: GameStatus!
+    startDateTime: String!
+    playersPerTable: Int!
+    numberOfRebuys: Int!
+    rebuyPeriod: RebuyPeriod!
+    addOn: Boolean!
+    startingChips: Float!
+    gameSpeed: GameSpeed!
+    lateRegistrationDuration: LateRegistrationDuration!
   }
 
   type Card {
     rank: Rank!
     suit: Suit!
+  }
+
+  type Deck {
+    id: ID!
+    cards: [Card!]!
+  }
+
+  type UserUpdateResponse {
+    message: String!
+    user: User
+  }
+
+  type Auth {
+    token: ID!
+    user: User
+  }
+
+  enum GameStatus {
+    waiting
+    ongoing
+    finished
+  }
+
+  enum GameType {
+    cash
+    tournament
+  }
+  enum RebuyPeriod {
+    _30min
+    _60min
+    _90min
+    _120min
+    none
+  }
+
+  enum GameSpeed {
+    slow
+    medium
+    fast
+    ridiculous
+  }
+
+  enum Duration {
+    _1hr
+    _2hr
+    _3hr
+    _4hr
+    unlimited
+    manual
+  }
+
+  enum LateRegistrationDuration {
+    _30min
+    _60min
+    _90min
+    none
   }
 
   enum Rank {
@@ -48,24 +124,14 @@ const typeDefs = gql`
     SPADES
   }
 
-  type Deck {
-    id: ID!
-    cards: [Card!]!
-  }
-
-  type UserUpdateResponse {
-    message: String!
-    user: User
-  }
-
-  type Auth {
-    token: ID!
-    user: User
-  }
-
   type Query {
     users: [User]!
     user(userId: ID!): User
+    pokerGroups(userId: ID!): [PokerGroup]
+    pendingMembers(groupId: ID!): [User]
+    membersOfGroup(groupId: ID!): [User]
+    cashGamesInGroup(groupId: ID!): [CashGame!]!
+    tournamentGamesInGroup(groupId: ID!): [TournamentGame!]!
   }
 
   type Mutation {
@@ -78,6 +144,39 @@ const typeDefs = gql`
       password: String
     ): UserUpdateResponse
     removeUser(userId: ID!): UserUpdateResponse
+
+    createPokerGroup(name: String!, joinPassword: String!): PokerGroup
+    deletePokerGroup(groupId: ID!): String
+
+    requestToJoinGroup(groupId: ID!, joinPassword: String!): PokerGroup
+    approvePendingMember(groupId: ID!, userId: ID!): PokerGroup
+    removeGroupMember(groupId: ID!, userId: ID!): String
+
+    createCashGame(
+      groupId: ID!
+      name: String!
+      startDateTime: String!
+      playersPerTable: Int!
+      startingChips: Float!
+      blindsSmall: Float!
+      blindsBig: Float!
+      duration: Duration!
+    ): CashGame
+
+    createTournamentGame(
+      groupId: ID!
+      name: String!
+      startDateTime: String!
+      playersPerTable: Int!
+      numberOfRebuys: Int!
+      rebuyPeriod: RebuyPeriod!
+      addOn: Boolean!
+      startingChips: Float!
+      gameSpeed: GameSpeed!
+      lateRegistrationDuration: LateRegistrationDuration!
+    ): TournamentGame
+
+    deleteGame(gameId: ID!, gameType: GameType!): String
   }
 `;
 

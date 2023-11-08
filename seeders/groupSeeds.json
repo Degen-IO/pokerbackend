@@ -1,6 +1,7 @@
 [
   {
     "name": "Group1",
+    "joinPassword": "password1",
     "UserGroupRoles": [
       { "role": "admin", "userId": 1 },
       { "role": "member", "userId": 2 },
@@ -9,6 +10,7 @@
   },
   {
     "name": "Group2",
+    "joinPassword": "password1",
     "UserGroupRoles": [
       { "role": "admin", "userId": 4 },
       { "role": "member", "userId": 1 },
