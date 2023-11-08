@@ -10,14 +10,21 @@ const getPokerGroupModel = (sequelize, { DataTypes }) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    joinPassword: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   });
 
   PokerGroup.associate = (models) => {
-    //A poker group can have multiple user roles, and each user role is associated with a specific poker group.
+    // A poker group can have multiple user roles, and each user role is associated with a specific poker group.
     PokerGroup.hasMany(models.UserGroupRole, { foreignKey: "groupId" });
 
-    //a poker group can have multiple poker games, define an association for poker games within the group.
-    PokerGroup.hasMany(models.PokerGame, { foreignKey: "gameId" });
+    // A poker group can have multiple cash games, define an association for cash games within the group.
+    PokerGroup.hasMany(models.CashGame, { foreignKey: "groupId" });
+
+    // A poker group can have multiple tournament games, define an association for tournament games within the group.
+    PokerGroup.hasMany(models.TournamentGame, { foreignKey: "groupId" });
   };
 
   return PokerGroup;

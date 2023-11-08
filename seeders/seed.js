@@ -26,19 +26,17 @@ const seedDatabase = async () => {
 
     // Seed Groups and UserGroupRoles
     for (const groupData of groupSeedData) {
-      const pokerGroup = await PokerGroup.create({ name: groupData.name });
+      const { name, joinPassword, UserGroupRoles } = groupData; // Destructure the data
 
-      for (const roleData of groupData.UserGroupRoles) {
+      const pokerGroup = await PokerGroup.create({ name, joinPassword }); // Include joinPassword
+
+      for (const roleData of UserGroupRoles) {
         let user, userGroupRole;
 
         user = await User.findByPk(roleData.userId);
 
         userGroupRole = await UserGroupRole.create({
           role: roleData.role,
-        });
-
-        const pokerGroup = await PokerGroup.findOne({
-          where: { name: groupData.name },
         });
 
         if (user && pokerGroup) {
