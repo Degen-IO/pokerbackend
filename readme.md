@@ -7,8 +7,8 @@ This is an API for `HomeGame`, a Texas Hold Em poker platform built with the fle
 ## Setup
 
 1. Run `npm i`
-2. Follow steps for [self-hosted database](#self-hosted) or [docker database](#docker) to setup your dev database.
-3. Create a `.env` file in the root of the backend folder. See [`Env Setup`](#env-setup) portion of this doc.
+2. Create a `.env` file in the root of the backend folder. See [`Env Setup`](#env-setup) portion of this doc.
+3. Follow steps for [self-hosted database](#self-hosted) or [container-based database](#container) to setup your dev database.
 
 ## Env Setup
 
@@ -26,35 +26,40 @@ You may run this on your local machine.
   - `POSTGRES_HOST` => localhost (replace the default of db)
   - `POSTGRES_USER`
   - `POSTGRES_PASSWORD`
-- In your local instance of PGAdmin, you will need to follow steps 6-9 in the [docker instructions](#run-the-app-using-docker)
+- In your local instance of PGAdmin, you will need to follow steps 6-9 in the [container instructions](#run-the-app-using-docker-or-podman)
 - Seed the database with `npm run seed`.
 - Run the local API with `npm start` or `npm run watch`.
 
-### Docker
+## Container
+
+We employ Docker or Podman scripts to start several containers within your local environment, streamlining the development process and substituting certain system configurations with these containers.
+
+### Run the app using Docker or Podman
 
 ---
 
-We employ Docker to start several containers within your local environment, streamlining the development process and substituting certain system configurations with these containers.
+1. Choose your container:
 
-### Run the app using Docker
-
----
-
-1. You need to have Docker Engine and Docker Compose on your machine. You can either:
+#### Docker:
 
 - Install [Docker Engine](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) as standalone binaries
 - Install [Docker Desktop](https://docs.docker.com/desktop/) which includes both Docker Engine and Docker Compose
 
+#### Podman:
+
+- Install [Podman Desktop](https://podman-desktop.io/)
+- Install [Podman Compose](https://formulae.brew.sh/formula/podman-compose)
+
 2. Create .env file as specified [here](#env-setup).
-3. Run `npm run docker:up` to download, build, and start containers defined in docker-compose.yml. Note: terminating this command will stop the containers. Add -d to detach and run in background.
-4. After this, docker will be running the backend, database, and pgadmin.
+3. Run `npm run docker:up` or `npm run podman:up` to download, build, and start containers defined in docker-compose.yml. Note: terminating this command will stop the containers. Add -d to detach and run in background.
+4. After this, your container manager of choice will be running the backend, database, and pgadmin.
 5. Go to the `pgadmin` container and select the container action `Open in Browser`. Use the `#PGADMIN` credentials set from your `.env`. You will need to setup the database.
 6. Click `Add New Server`. You will now be able to input your settings to create the database. In the General tab, choose whatever name you like.
 7. In the Connection tab, input the following from your enviroment variables:
    - The Host Name / Address => `POSTGRES_HOST`
    - Username => `POSTGRES_USER`
    - Password => `POSTGRES_PASSWORD`
-8. Open up Docker and go to the CLI for backend container actions.
+8. Open up Docker/Podman and go to the CLI for backend container actions.
 9. Run `npm run seed` to seed the tables in the database and you've up and running!
 
 ### Docker Scripts
@@ -63,31 +68,84 @@ We employ Docker to start several containers within your local environment, stre
 
 You have at your disposal the following set of `docker-compose` commands to manage these containers effectively.
 
-`npm run docker:up`
+#### `npm run docker:up`
+
 This command initiates the building and starting of Docker containers. It serves as the primary step when no containers are currently active. It takes care of downloading or constructing all required container images and subsequently launching the essential containers and networks. If needed, you can run it in the background by adding the `-d` flag.
 
-`npm run docker:down`
+#### `npm run docker:down`
+
 Stop and remove Docker containers. Please exercise caution, as it will erase all data within the database and pgadmin. Use it when you require a fresh start or exclusively for the `backend` service.
 
-`npm run docker:start`
+#### `npm run docker:start`
+
 This command restarts containers that were previously stopped.
 
-`npm run docker:stop`
+#### `npm run docker:stop`
+
 It halts previously created Docker containers without removing them from your system.
 
-`npm run docker:restart`
+#### `npm run docker:restart`
+
 This command effectively restarts all Docker services, essentially performing the same operation as `npm run docker:stop && npm run docker:start`.
 
-`npm run docker:logs`
+#### `npm run docker:logs`
+
 Use this command to monitor and print logs generated by Docker services.
 
-`npm run docker:rebuild`
+#### `npm run docker:rebuild`
+
 This command recompiles the services, or a specific service if indicated. Consider using it alongside the `backend` parameter, especially after modifying any .env variables.
 
-`npm run docker:clean`
+#### `npm run docker:clean`
+
 Similar to `npm run docker:down`, this command additionally removes orphan containers and all associated images linked to the services specified in [docker-compose.yml](docker/local/docker-compose.yml).
 
 Please bear in mind that you can execute all these commands individually for each service. In other words, running `npm run docker:up <service_name>` will perform the designated action for the specified `<service_name>` (where `<service_name>` corresponds to one of the services listed in [docker-compose.yml](docker/local/docker-compose.yml)). Furthermore, detailed instructions for each command can be accessed by running `npm run docker:<command> --help`.
+
+### Podman Scripts
+
+---
+
+These `podman-compose` commands offer comprehensive management of your containers.
+
+#### `npm run podman:up`
+
+Initiates the building and starting of Podman containers. It's the primary command to use when starting from a clean state, handling the creation and launch of necessary containers and networks. For background execution, append `-d`.
+
+#### `npm run podman:down`
+
+Stops and removes Podman containers, effectively erasing all data within the database and other services. Ideal for a complete reset or when focusing solely on the `backend` service.
+
+#### `npm run podman:start`
+
+Restarts previously stopped containers, ensuring continued operation without a full restart.
+
+#### `npm run podman:stop`
+
+Halts running Podman containers without deleting them, allowing for temporary suspension of services.
+
+#### `npm run podman:restart`
+
+Performs a full restart of all Podman services, akin to executing `npm run podman:stop` followed by `npm run podman:start`.
+
+#### `npm run podman:logs`
+
+Enables live monitoring of logs from each service. Due to Podman's constraints, logs are fetched individually for each service:
+
+- `npm run podman:logs:backend` for backend logs.
+- `npm run podman:logs:db` for database logs.
+- `npm run podman:logs:pgadmin` for pgAdmin logs.
+- `npm run podman:logs:redis` for Redis logs.
+
+#### `npm run podman:rebuild`
+
+Rebuilds the services, or a specific service if specified. Useful after modifying `.env` variables or making other significant changes.
+
+#### `npm run podman:clean`
+
+Similar to `npm run podman:down`, but also removes orphan containers and associated images as defined in [docker-compose.yml](podman/local/docker-compose.yml).
+
+Just like with Docker, these commands can be executed for individual services. For instance, `npm run podman:up <service_name>` specifically targets the `<service_name>` listed in [docker-compose.yml](podman/local/docker-compose.yml). For detailed instructions on each command, run `npm run podman:<command> --help`.
 
 ### Troubleshooting
 
