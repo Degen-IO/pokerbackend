@@ -2,7 +2,7 @@
 
 ## Project Description
 
-This is an API for `HomeGame`, a Texas Hold Em poker platform built with the flexibility of a house game in mind. Players can create groups to being hosting cash games or tournaments within their group. Admins in a group may schedule games in advance and customize a number of game attributes like game speed, number of players per table, add-ons, etc.
+This is an API for `HomeGame``, a Texas Hold Em poker platform built with the flexibility of a house game in mind. Users can create groups and host cash games or tournaments within their group. Group admins and accepted members may schedule games in advance and customize a number of game attributes like game speed, number of players per table, add-ons, etc.
 
 ## Setup
 
@@ -15,14 +15,29 @@ This is an API for `HomeGame`, a Texas Hold Em poker platform built with the fle
 To prepare the development environment, you need files containing sensitive information for accessing backend services. These files are intentionally excluded due to their confidential nature. Additionally, this approach permits us to define variables tailored to the local environment, ensuring uniqueness across each developer's machine.
 
 1. Create .env file
-   - Inside the env file, add the following fields and populate them per your machine. These fields will be used to connect to your local or dockerized postgres instance (also found in `.env.example`):
+2. Inside the newly created .env file, add the following fields and populate them per your machine. These fields will be used to connect to your local enviroment or containerized backend instances (also found in `.env.example`):
+
+   ```
+   # Postgres
+   POSTGRES_USER=postgres
+   POSTGRES_PASSWORD=
+   POSTGRES_DB=poker
+   POSTGRES_HOST=db     # use 'db' to connect to container or use 'localhost' here for self-hosting
+   POSTGRES_PORT=5432
+
+   # PGAdmin (These will just be used for the container instance of pgadmin to interact with the containerized postgres instance)
+   PGADMIN_DEFAULT_EMAIL=email@address.com
+   PGADMIN_DEFAULT_PASSWORD=password
+   ```
+
+   #### NOTE: Be sure to remove any additional whitespace or trailing comments from your values, Podman seems to want to include these in the variable names while Docker does not seem to mind their existance. This can cause unintended errors on initialization, such as trying to connect to _'db #comment here'_ or _'db '_ instead of 'db'. [See troubleshooting](#incorrect-database-configuration-provided-in-env)
 
 ## Self Hosted
 
 You may run this on your local machine.
 
 - Make sure you have [postgres](https://www.postgresql.org/download/) and [pgadmin](https://www.pgadmin.org/download/) installed locally, as well as a local user setup for PGAdmin.
-- Input the following variables from your local enviroment in `.env`:
+- Define the following variables from your local enviroment in `.env`:
   - `POSTGRES_HOST` => localhost (replace the default of db)
   - `POSTGRES_USER`
   - `POSTGRES_PASSWORD`
@@ -56,7 +71,7 @@ We employ Docker or Podman scripts to start several containers within your local
 5. Go to the `pgadmin` container and select the container action `Open in Browser`. Use the `#PGADMIN` credentials set from your `.env`. You will need to setup the database.
 6. Click `Add New Server`. You will now be able to input your settings to create the database. In the General tab, choose whatever name you like.
 7. In the Connection tab, input the following from your enviroment variables:
-   - The Host Name / Address => `POSTGRES_HOST`
+   - The Host Name / Address (default db) => `POSTGRES_HOST`
    - Username => `POSTGRES_USER`
    - Password => `POSTGRES_PASSWORD`
 8. Open up Docker/Podman and go to the CLI for backend container actions.
@@ -149,6 +164,8 @@ Just like with Docker, these commands can be executed for individual services. F
 
 ### Troubleshooting
 
+#### Port in Use
+
 Port in use trying to create a new postgres instance? You'll want to see what process is running on your port with `sudo lsof -i tcp:<PORT>`. For Postgres,run `sudo lsof -i tcp:5432` in your terminal to see what is running on the port you are trying to use.
 
 It should return something like this:
@@ -158,3 +175,40 @@ It should return something like this:
 | something | 1337 | user | ... more columns -> |
 
 Use the `PID` from the table to `sudo kill <PID>` in this case, `sudo kill 1337`. You can rerun the `lsof -i tcp:<PORT>` command again to verify the process has been killed. Once killed, you can try setup again via docker or self hosting.
+
+#### Incorrect Database Configuration provided in .env
+
+```
+ConnectionError [SequelizeConnectionError]: getaddrinfo EAI_AGAIN
+```
+
+This error can happen if Sequelize cannot connect to your hostname. In our testing, this specifically affected Podman containers and trailing whitespace after a variable (hostname) in the env. This would cause the following error during a Podman initialization.
+
+```
+Error seeding the database: ConnectionError [SequelizeConnectionError]: getaddrinfo EAI_AGAIN db
+    at Client._connectionCallback (/app/node_modules/sequelize/lib/dialects/postgres/connection-manager.js:143:24)
+    at Client._handleErrorWhileConnecting (/app/node_modules/pg/lib/client.js:327:19)
+    at Client._handleErrorEvent (/app/node_modules/pg/lib/client.js:337:19)
+    at Connection.emit (node:events:514:28)
+    at Socket.reportStreamError (/app/node_modules/pg/lib/connection.js:58:12)
+    at Socket.emit (node:events:514:28)
+    at emitErrorNT (node:internal/streams/destroy:151:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:116:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  parent: Error: getaddrinfo EAI_AGAIN db
+      at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:118:26) {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'db '
+  },
+  original: Error: getaddrinfo EAI_AGAIN db
+      at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:118:26) {
+    errno: -3001,
+    code: 'EAI_AGAIN',
+    syscall: 'getaddrinfo',
+    hostname: 'db '
+  }
+}
+
+```
