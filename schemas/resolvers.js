@@ -8,12 +8,38 @@ const {
   PokerGroup,
   CashGame,
   TournamentGame,
+  Player,
   PlayerAction,
   PlayerHand,
   Card,
   Deck,
 } = require("../models");
 const { signToken } = require("../utils/auth");
+
+function hasLateRegistrationExpired(startDateTime, lateRegistrationDuration) {
+  const currentDateTime = new Date();
+  const registrationEndTime = new Date(startDateTime);
+
+  //Switch the enum value passed to a minutes value and add it to registrationEndTime
+  switch (lateRegistrationDuration) {
+    case "none":
+      // If late registration is not allowed, the end time is the same as start time
+      break;
+    case "_30min":
+      registrationEndTime.setMinutes(registrationEndTime.getMinutes() + 30);
+      break;
+    case "_60min":
+      registrationEndTime.setMinutes(registrationEndTime.getMinutes() + 60);
+      break;
+    case "_90min":
+      registrationEndTime.setMinutes(registrationEndTime.getMinutes() + 90);
+      break;
+    default:
+      throw new Error("Invalid lateRegistrationDuration value");
+  }
+  //return true or false so we know if they can join or not
+  return currentDateTime > registrationEndTime;
+}
 
 const resolvers = {
   Query: {
@@ -659,6 +685,71 @@ const resolvers = {
       await game.destroy();
 
       return "Game successfully deleted";
+    },
+    joinGame: async (parent, { gameId, gameType }, context) => {
+      // Check if the user is authenticated
+      if (!context.authUserId) {
+        throw new AuthenticationError("You must be logged in to join a game");
+      }
+
+      try {
+        // Assuming that user access control is already handled to ensure
+        // the user belongs to the poker group, you can proceed to check
+        // game eligibility.
+
+        let game;
+
+        if (gameType === "cash") {
+          game = await CashGame.findByPk(gameId);
+        } else if (gameType === "tournament") {
+          game = await TournamentGame.findByPk(gameId);
+        } else {
+          throw new Error("Invalid game type");
+        }
+
+        if (!game) {
+          throw new Error("Game not found");
+        }
+
+        // Check game eligibility based on game type and status
+        if (
+          (gameType === "cash" && game.gameStatus !== "finished") ||
+          (gameType === "tournament" &&
+            (game.gameStatus === "waiting" ||
+              (game.gameStatus === "ongoing" &&
+                !hasLateRegistrationExpired(
+                  game.startDateTime,
+                  game.lateRegistrationDuration
+                ))))
+        ) {
+          // Check if the user has already registered for the game
+          const existingPlayer = await Player.findOne({
+            where: {
+              userId: context.authUserId,
+              gameId: game.gameId,
+            },
+          });
+
+          if (existingPlayer) {
+            throw new Error("You have already registered for this game");
+          }
+
+          // Create a new player entry associating the user with the game
+          const player = await Player.create({
+            userId: context.authUserId,
+            gameId: game.gameId,
+            gameType: gameType,
+            // Add other player-related fields if needed
+          });
+
+          return player;
+        } else {
+          throw new Error("You are not eligible to join this game");
+        }
+      } catch (error) {
+        console.error("Error while joining the game:", error.message);
+        throw error;
+      }
     },
   },
 };

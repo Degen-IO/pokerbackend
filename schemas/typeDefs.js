@@ -8,6 +8,13 @@ const typeDefs = gql`
     chip_stack: Float!
   }
 
+  type Player {
+    playerId: ID!
+    userId: ID!
+    gameId: ID!
+    gameType: String!
+  }
+
   type PokerGroup {
     groupId: ID!
     name: String!
@@ -177,6 +184,8 @@ const typeDefs = gql`
     ): TournamentGame
 
     deleteGame(gameId: ID!, gameType: GameType!): String
+
+    joinGame(gameId: ID!, gameType: GameType!): Player
   }
 `;
 

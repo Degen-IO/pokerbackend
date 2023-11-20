@@ -8,6 +8,7 @@ const { getUserGroupRoleModel } = require("./UserGroupRole");
 const { getCashGameModel } = require("./CashGame");
 const { getTournamentGameModel } = require("./TournamentGame");
 const { getPokerGroupModel } = require("./PokerGroup");
+const { getPlayerModel } = require("./Player");
 const { getPlayerActionModel } = require("./PlayerAction");
 const { getPlayerHandModel } = require("./PlayerHand");
 const { getBlindLevelModel } = require("./BlindLevel");
@@ -15,6 +16,7 @@ const { getBlindLevelModel } = require("./BlindLevel");
 const models = {
   User: getUserModel(sequelize, Sequelize),
   UserGroupRole: getUserGroupRoleModel(sequelize, Sequelize),
+  Player: getPlayerModel(sequelize, Sequelize),
   PlayerAction: getPlayerActionModel(sequelize, Sequelize),
   PlayerHand: getPlayerHandModel(sequelize, Sequelize),
   CashGame: getCashGameModel(sequelize, Sequelize),
