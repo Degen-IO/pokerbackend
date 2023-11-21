@@ -1,4 +1,4 @@
-const { AuthenticationError } = require("apollo-server-express");
+const { GraphQLError } = require("graphql");
 const { Op } = require("sequelize");
 
 const bcrypt = require("bcryptjs");
@@ -62,8 +62,13 @@ const resolvers = {
     pendingMembers: async (parent, { groupId }, context) => {
       // Check if the user is authorized to view pending members
       if (!context.authUserId) {
-        throw new AuthenticationError(
-          "You must be logged in to view pending members"
+        throw new GraphQLError(
+          "You must be logged in to view pending members",
+          {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          }
         );
       }
 
@@ -77,8 +82,13 @@ const resolvers = {
       });
 
       if (!isAdmin) {
-        throw new AuthenticationError(
-          "You are not authorized to view pending members for this group"
+        throw new GraphQLError(
+          "You are not authorized to view pending members for this group",
+          {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          }
         );
       }
 
@@ -113,8 +123,13 @@ const resolvers = {
     cashGamesInGroup: async (parent, { groupId }, context) => {
       // Check if the user is authorized to view Cash Games in the group
       if (!context.authUserId) {
-        throw new AuthenticationError(
-          "You must be logged in to view Cash Games in the group"
+        throw new GraphQLError(
+          "You must be logged in to view Cash Games in the group",
+          {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          }
         );
       }
 
@@ -128,8 +143,13 @@ const resolvers = {
       });
 
       if (!userRole) {
-        throw new AuthenticationError(
-          "You are not authorized to view Cash Games in this group"
+        throw new GraphQLError(
+          "You are not authorized to view Cash Games in this group",
+          {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          }
         );
       }
 
@@ -146,8 +166,13 @@ const resolvers = {
     tournamentGamesInGroup: async (parent, { groupId }, context) => {
       // Check if the user is authorized to view Tournament Games in the group
       if (!context.authUserId) {
-        throw new AuthenticationError(
-          "You must be logged in to view Tournament Games in the group"
+        throw new GraphQLError(
+          "You must be logged in to view Tournament Games in the group",
+          {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          }
         );
       }
 
@@ -161,8 +186,13 @@ const resolvers = {
       });
 
       if (!userRole) {
-        throw new AuthenticationError(
-          "You are not authorized to view Tournament Games in this group"
+        throw new GraphQLError(
+          "You are not authorized to view Tournament Games in this group",
+          {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          }
         );
       }
 
@@ -193,7 +223,11 @@ const resolvers = {
         if (!user) {
           // Log and throw an error
           console.error("No user with this email found!");
-          throw new AuthenticationError("No user with this email found!");
+          throw new GraphQLError("No user with this email found!", {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          });
         }
 
         const correctPw = await user.isCorrectPassword(password);
@@ -201,7 +235,11 @@ const resolvers = {
         if (!correctPw) {
           // Log and throw an error
           console.error("Incorrect password!");
-          throw new AuthenticationError("Incorrect password!");
+          throw new GraphQLError("Incorrect password!", {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          });
         }
 
         const token = signToken(user);
@@ -284,9 +322,11 @@ const resolvers = {
     createPokerGroup: async (parent, { name, joinPassword }, context) => {
       // Check if the user is authorized to create a group
       if (!context.authUserId) {
-        throw new AuthenticationError(
-          "You must be logged in to create a group"
-        );
+        throw new GraphQLError("You must be logged in to create a group", {
+          extensions: {
+            code: "UNAUTHENTICATED",
+          },
+        });
       }
 
       try {
@@ -311,9 +351,11 @@ const resolvers = {
     deletePokerGroup: async (parent, { groupId }, context) => {
       // Check if the user is authorized to delete the group
       if (!context.authUserId) {
-        throw new AuthenticationError(
-          "You must be logged in to delete a group"
-        );
+        throw new GraphQLError("You must be logged in to delete a group", {
+          extensions: {
+            code: "UNAUTHENTICATED",
+          },
+        });
       }
 
       const group = await PokerGroup.findByPk(groupId);
@@ -342,7 +384,11 @@ const resolvers = {
     },
     requestToJoinGroup: async (parent, { groupId, joinPassword }, context) => {
       if (!context.authUserId) {
-        throw new AuthenticationError("You must be logged in to join a group");
+        throw new GraphQLError("You must be logged in to join a group", {
+          extensions: {
+            code: "UNAUTHENTICATED",
+          },
+        });
       }
 
       try {
@@ -392,8 +438,13 @@ const resolvers = {
       });
 
       if (!isAdmin) {
-        throw new AuthenticationError(
-          "You are not authorized to approve pending members for this group"
+        throw new GraphQLError(
+          "You are not authorized to approve pending members for this group",
+          {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          }
         );
       }
 
@@ -434,8 +485,13 @@ const resolvers = {
       const isSelfRemoval = parsedContextId === userIdInt;
 
       if (!isAdmin && !isSelfRemoval) {
-        throw new AuthenticationError(
-          "You are not authorized to remove members from this group"
+        throw new GraphQLError(
+          "You are not authorized to remove members from this group",
+          {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          }
         );
       }
 
@@ -468,9 +524,11 @@ const resolvers = {
         // You can use context.authUserId to check the user's authorization.
 
         if (!context.authUserId) {
-          throw new AuthenticationError(
-            "You must be logged in to create a game"
-          );
+          throw new GraphQLError("You must be logged in to create a game", {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          });
         }
 
         // Find the group associated with the game
@@ -490,8 +548,13 @@ const resolvers = {
         });
 
         if (!userRole) {
-          throw new AuthenticationError(
-            "You are not authorized to create a game in this group"
+          throw new GraphQLError(
+            "You are not authorized to create a game in this group",
+            {
+              extensions: {
+                code: "UNAUTHENTICATED",
+              },
+            }
           );
         }
 
@@ -545,7 +608,11 @@ const resolvers = {
       // You can use context.authUserId to check the user's authorization.
 
       if (!context.authUserId) {
-        throw new AuthenticationError("You must be logged in to create a game");
+        throw new GraphQLError("You must be logged in to create a game", {
+          extensions: {
+            code: "UNAUTHENTICATED",
+          },
+        });
       }
 
       // Find the group associated with the game
@@ -565,8 +632,13 @@ const resolvers = {
       });
 
       if (!userRole) {
-        throw new AuthenticationError(
-          "You are not authorized to create a game in this group"
+        throw new GraphQLError(
+          "You are not authorized to create a game in this group",
+          {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          }
         );
       }
 
@@ -615,7 +687,11 @@ const resolvers = {
     deleteGame: async (parent, { gameId, gameType }, context) => {
       // Check if the user is authenticated
       if (!context.authUserId) {
-        throw new AuthenticationError("You must be logged in to delete a game");
+        throw new GraphQLError("You must be logged in to delete a game", {
+          extensions: {
+            code: "UNAUTHENTICATED",
+          },
+        });
       }
 
       // Find the game by ID
@@ -643,9 +719,11 @@ const resolvers = {
       });
 
       if (game.userId !== context.authUserId && !isAdmin) {
-        throw new AuthenticationError(
-          "You are not authorized to delete this game"
-        );
+        throw new GraphQLError("You are not authorized to delete this game", {
+          extensions: {
+            code: "UNAUTHENTICATED",
+          },
+        });
       }
 
       // If it's a tournament game, check if its status is "waiting"
