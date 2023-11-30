@@ -20,6 +20,7 @@ const getPlayerModel = (sequelize, { DataTypes }) => {
   Player.associate = (models) => {
     // Player belongs to a User
     Player.belongsTo(models.User, { foreignKey: "userId" });
+    Player.belongsTo(models.Table, { foreignKey: "tableId" });
 
     // Player can be associated with either a CashGame or a TournamentGame
     // Define the associations for CashGame and TournamentGame here

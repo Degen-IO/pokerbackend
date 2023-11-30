@@ -13,6 +13,12 @@ const typeDefs = gql`
     userId: ID!
     gameId: ID!
     gameType: String!
+    tableId: ID!
+  }
+
+  type Table {
+    tableId: ID!
+    gameId: ID!
   }
 
   type PokerGroup {

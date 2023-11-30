@@ -9,6 +9,7 @@ const {
   CashGame,
   TournamentGame,
   Player,
+  Table,
   PlayerAction,
   PlayerHand,
   Card,
@@ -622,6 +623,12 @@ const resolvers = {
           userId: context.authUserId, // Associate with the user
         });
 
+        // Create the initial table for the Cash Game
+        await Table.create({
+          gameId: cashGame.gameId,
+          // Add any necessary attributes for the table
+        });
+
         return cashGame;
       } catch (error) {
         console.error("Error while creating CashGame:", error.message);
@@ -708,6 +715,12 @@ const resolvers = {
         userId: context.authUserId, // Associate with the user
       });
 
+      // Create the initial table for the Cash Game
+      await Table.create({
+        gameId: tournamentGame.gameId,
+        // Add any necessary attributes for the table
+      });
+
       return tournamentGame;
     },
     deleteGame: async (parent, { gameId, gameType }, context) => {
@@ -759,6 +772,17 @@ const resolvers = {
         );
       }
 
+      // Find and delete all associated tables of the game
+      const tables = await Table.findAll({
+        where: {
+          gameId: game.gameId,
+        },
+      });
+
+      for (const table of tables) {
+        await table.destroy();
+      }
+
       // Delete the game
       await game.destroy();
 
@@ -778,9 +802,9 @@ const resolvers = {
         let game;
 
         if (gameType === "cash") {
-          game = await CashGame.findByPk(gameId);
+          game = await CashGame.findByPk(gameId, { include: Table }); // Include associated tables
         } else if (gameType === "tournament") {
-          game = await TournamentGame.findByPk(gameId);
+          game = await TournamentGame.findByPk(gameId, { include: Table }); // Include associated tables
         } else {
           throw new Error("Invalid game type");
         }
@@ -812,10 +836,59 @@ const resolvers = {
             throw new Error("You have already registered for this game");
           }
 
-          // Create a new player entry associating the user with the game
+          // Find a table with available seats (playersPerTable not maxed out)
+          let tableToJoin;
+
+          for (const table of game.tables) {
+            const players = (await table.getPlayers()) || []; // Retrieve associated players
+            if (players.length < game.playersPerTable) {
+              tableToJoin = table;
+              break;
+            }
+          }
+
+          if (!tableToJoin) {
+            // If all tables are full, create a new table
+            tableToJoin = await Table.create({
+              // Add any necessary attributes for the table
+              gameId: game.gameId,
+            });
+          }
+
+          // Before trying to access properties of tableToJoin
+          console.log("tableToJoin:", tableToJoin);
+          console.log("tableToJoin.players:", tableToJoin.players);
+
+          // Check if the new player joining makes the tables unevenly distributed
+          const tables = await game.getTables({ include: "players" }); // Retrieve associated tables with players
+          const totalPlayers = tables.reduce(
+            (total, table) => total + table.players.length,
+            0
+          );
+          const avgPlayersPerTable = Math.floor(totalPlayers / tables.length);
+
+          if (tableToJoin.players.length > avgPlayersPerTable) {
+            // If the new table has more players than average, redistribute players
+            for (const table of tables) {
+              if (table.players.length < avgPlayersPerTable) {
+                const playersToMove = tableToJoin.players.slice(
+                  0,
+                  tableToJoin.players.length - avgPlayersPerTable
+                );
+                for (const player of playersToMove) {
+                  player.tableId = table.tableId;
+                  await player.save();
+                }
+                break;
+              }
+            }
+          }
+
+          // Create a new player entry associating the user with the table
           const player = await Player.create({
             userId: context.authUserId,
             gameId: game.gameId,
+            tableId: tableToJoin.tableId,
             gameType: gameType,
             // Add other player-related fields if needed
           });

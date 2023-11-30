@@ -4,6 +4,7 @@ const Sequelize = require("sequelize");
 const { getUserModel } = require("./User");
 const { getCardModel } = require("./Card");
 const { getDeckModel } = require("./Deck");
+const { getTableModel } = require("./Table");
 const { getUserGroupRoleModel } = require("./UserGroupRole");
 const { getCashGameModel } = require("./CashGame");
 const { getTournamentGameModel } = require("./TournamentGame");
@@ -24,6 +25,7 @@ const models = {
   PokerGroup: getPokerGroupModel(sequelize, Sequelize),
   Card: getCardModel(sequelize, Sequelize),
   Deck: getDeckModel(sequelize, Sequelize),
+  Table: getTableModel(sequelize, Sequelize),
   BlindLevel: getBlindLevelModel(sequelize, Sequelize),
 };
 
