@@ -49,7 +49,7 @@ describe("GraphQL Server Tests", () => {
     expect(response.body.data).toHaveProperty("users");
   });
 
-  it("fetches all users", async () => {
+  it("fetches all users, should return 5", async () => {
     const response = await request(app)
       .post("/graphql")
       .send({
@@ -64,9 +64,9 @@ describe("GraphQL Server Tests", () => {
             }
         `,
       });
-    console.log(response.body.data);
+    const { users } = response.body.data;
     expect(response.statusCode).toBe(200);
-    expect(response.body);
+    expect((users.length = 5));
   });
 
   it("adds a user", async () => {

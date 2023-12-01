@@ -2,7 +2,7 @@
 
 ## Project Description
 
-This is an API for `HomeGame``, a Texas Hold Em poker platform built with the flexibility of a house game in mind. Users can create groups and host cash games or tournaments within their group. Group admins and accepted members may schedule games in advance and customize a number of game attributes like game speed, number of players per table, add-ons, etc.
+This is an API for `HomeGame`, a Texas Hold Em poker platform built with the flexibility of a house game in mind. Users can create groups and host cash games or tournaments within their group. Group admins and accepted members may schedule games in advance and customize a number of game attributes like game speed, number of players per table, add-ons, etc.
 
 ## Setup
 
@@ -18,6 +18,9 @@ To prepare the development environment, you need files containing sensitive info
 2. Inside the newly created .env file, add the following fields and populate them per your machine. These fields will be used to connect to your local enviroment or containerized backend instances (also found in `.env.example`):
 
    ```
+   # NODE_ENV = 'test' for jest, TO DO: Add 'prod' or 'dev' for other options
+   NODE_ENV=prod
+
    # Postgres
    POSTGRES_USER=postgres
    POSTGRES_PASSWORD=
