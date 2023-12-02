@@ -1,45 +1,26 @@
-const express = require("express");
-const { ApolloServer } = require("@apollo/server");
-const cors = require("cors");
-const { expressMiddleware } = require("@apollo/server/express4");
-const { typeDefs, resolvers } = require("../schemas");
 const request = require("supertest");
-const sequelize = require("../config/connection.js");
-const { authMiddleware } = require("../utils/auth.js");
-const { seedDatabase } = require("../seeders/seed");
+const { initializeServer } = require("../config/testConnection");
 
-// Mocks (adjust according to your actual implementation)
-jest.mock("../config/connection", () => require("../__mocks__/connectionMock"));
+/* 
+This is the GraphQL query + mutation testing 
+  Notes:
 
-describe("GraphQL Server Tests", () => {
-  let app;
-  let server;
+*/
+describe("Server Tests", () => {
+  let app, server, sequelize;
 
   beforeAll(async () => {
-    app = express();
-    server = new ApolloServer({ typeDefs, resolvers });
-
-    // Initialize and sync Sequelize models
-    // await sequelize.sync({ force: true });
-    await seedDatabase(sequelize);
-
-    await server.start();
-    app.use(
-      "/graphql",
-      cors(),
-      express.json(),
-      expressMiddleware(server, {
-        context: authMiddleware,
-      })
-    );
+    // Initialize server and related components using the shared function
+    ({ app, server, sequelize } = await initializeServer());
   });
 
   afterAll(async () => {
     await sequelize.close(); // Close the Sequelize connection
   });
 
-  // TESTS
-
+  /*
+   * DEFINE YOUR TESTS HERE
+   */
   it("fetches users", async () => {
     const response = await request(app)
       .post("/graphql")
@@ -49,6 +30,7 @@ describe("GraphQL Server Tests", () => {
     expect(response.body.data).toHaveProperty("users");
   });
 
+  // Tests seeds and user Query
   it("fetches all users, should return 5", async () => {
     const response = await request(app)
       .post("/graphql")
@@ -69,6 +51,7 @@ describe("GraphQL Server Tests", () => {
     expect((users.length = 5));
   });
 
+  // CRUD
   it("adds a user", async () => {
     const response = await request(app)
       .post("/graphql")
@@ -84,11 +67,9 @@ describe("GraphQL Server Tests", () => {
           }
         `,
       });
-
-    console.log(response.body); // Log the entire response body
-
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveProperty("data.addUser.user");
     expect(response.body.data.addUser.user.name).toBe("Test User");
   });
+  // ... more tests
 });
