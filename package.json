@@ -45,7 +45,6 @@
     "pg": "^8.11.3",
     "pg-promise": "^11.5.4",
     "sequelize": "^6.33.0",
-    "sequelize-mock": "^0.10.2",
     "sqlite3": "^5.1.6",
     "supertest": "^6.3.3"
   },
