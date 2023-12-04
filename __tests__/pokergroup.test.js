@@ -619,6 +619,71 @@ describe("PokerGroup CRUD Operations", () => {
       "can't be more than 1 year in the future"
     );
   });
+  // Query Cash Games
+  it("fails to query cash games if not authorized", async () => {
+    const query = `
+    query Query($groupId: ID!) {
+        cashGamesInGroup(groupId: $groupId) {
+          blindsBig
+          blindsSmall
+          duration
+          gameId
+          name
+          playersPerTable
+          startDateTime
+          startingChips
+          status
+        }
+      }
+    `;
+
+    const groupId = "1";
+    const response = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken4}`) //  Logged in user5
+      .send({
+        query,
+        variables: {
+          groupId,
+        },
+      });
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toHaveProperty("errors");
+    expect(response.body.errors[0].message).toContain(
+      "not authorized to view Cash Games in this group"
+    );
+  });
+  it("queries cash games if authorized", async () => {
+    const query = `
+    query Query($groupId: ID!) {
+        cashGamesInGroup(groupId: $groupId) {
+          blindsBig
+          blindsSmall
+          duration
+          gameId
+          name
+          playersPerTable
+          startDateTime
+          startingChips
+          status
+        }
+      }
+    `;
+
+    const groupId = "1";
+    const response = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken}`) //  Logged in user5
+      .send({
+        query,
+        variables: {
+          groupId,
+        },
+      });
+    expect(response.statusCode).toBe(200);
+    expect(response.body.data).toHaveProperty("cashGamesInGroup");
+    expect(response.body.data.cashGamesInGroup.length);
+  });
   // Creating Tournaments
   it("creates a tournament game", async () => {
     const query = `
@@ -920,6 +985,75 @@ describe("PokerGroup CRUD Operations", () => {
     expect(response.body.errors[0].message).toContain(
       "can't be more than 1 year in the future"
     );
+  });
+  // Query Tournament Games
+  it("fails to query tournament games if not authorized", async () => {
+    const query = `
+    query Query($groupId: ID!) {
+        tournamentGamesInGroup(groupId: $groupId) {
+          addOn
+          gameId
+          gameSpeed
+          lateRegistrationDuration
+          numberOfRebuys
+          name
+          rebuyPeriod
+          playersPerTable
+          startDateTime
+          startingChips
+          status
+        }
+      }
+    `;
+
+    const groupId = "1";
+    const response = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken4}`) //  Logged in user5
+      .send({
+        query,
+        variables: {
+          groupId,
+        },
+      });
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toHaveProperty("errors");
+    expect(response.body.errors[0].message).toContain(
+      "not authorized to view Tournament Games in this group"
+    );
+  });
+  it("queries tournament games if authorized", async () => {
+    const query = `
+    query Query($groupId: ID!) {
+        tournamentGamesInGroup(groupId: $groupId) {
+          addOn
+          gameId
+          gameSpeed
+          lateRegistrationDuration
+          numberOfRebuys
+          name
+          rebuyPeriod
+          playersPerTable
+          startDateTime
+          startingChips
+          status
+        }
+      }
+    `;
+
+    const groupId = "1";
+    const response = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken}`) //  Logged in user5
+      .send({
+        query,
+        variables: {
+          groupId,
+        },
+      });
+    expect(response.statusCode).toBe(200);
+    expect(response.body.data).toHaveProperty("tournamentGamesInGroup");
+    expect(response.body.data.tournamentGamesInGroup.length);
   });
   // Group Deletion
   it("fails to delete a pokergroup if not admin", async () => {
