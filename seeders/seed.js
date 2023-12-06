@@ -15,7 +15,7 @@ const cardSeedData = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, "cardSeeds.json"), "utf8")
 );
 
-const seedDatabase = async () => {
+const seedDatabase = async (sequelize) => {
   try {
     await sequelize.sync({ force: true });
 
@@ -51,11 +51,19 @@ const seedDatabase = async () => {
     }
 
     console.log("Database seeded successfully.");
-    process.exit(0);
+    // process.exit(0);
   } catch (error) {
     console.error("Error seeding the database:", error);
-    process.exit(1);
+    throw error;
   }
 };
 
-seedDatabase();
+// Only execute the script directly if it's called from the command line
+if (require.main === module) {
+  seedDatabase(sequelize).catch((error) => {
+    console.error("Failed to seed database:", error);
+    process.exit(1);
+  });
+}
+
+module.exports = { seedDatabase };
