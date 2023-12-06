@@ -42,6 +42,48 @@ function hasLateRegistrationExpired(startDateTime, lateRegistrationDuration) {
   return currentDateTime > registrationEndTime;
 }
 
+const findOrCreateTable = async (game) => {
+  // Find an existing table with available seats
+  const existingTable = await Table.findOne({
+    where: {
+      gameId: game.gameId,
+    },
+    include: [Player], // Include players associated with the table
+  });
+
+  if (existingTable) {
+    // Check if the table has available seats
+    const playersCount = existingTable.players.length;
+    if (playersCount < game.playersPerTable) {
+      return existingTable; // Found a table with available seats
+    }
+  }
+
+  // If no existing table with available seats, create a new table
+  const newTable = await Table.create({
+    gameId: game.gameId,
+    // Add any necessary attributes for the new table
+  });
+
+  return newTable;
+};
+
+const findAvailableSeatNumber = (assignedSeatNumbers, playersPerTable) => {
+  // Create an array representing all possible seat numbers
+  const allSeatNumbers = Array.from(
+    { length: playersPerTable },
+    (_, index) => index + 1
+  );
+
+  // Filter out the assigned seat numbers
+  const availableSeatNumbers = allSeatNumbers.filter(
+    (seatNumber) => !assignedSeatNumbers.includes(seatNumber)
+  );
+
+  // If there are available seat numbers, return the first one; otherwise, return null
+  return availableSeatNumbers.length > 0 ? availableSeatNumbers[0] : null;
+};
+
 const resolvers = {
   Query: {
     users: async () => {
@@ -793,7 +835,7 @@ const resolvers = {
       if (!context.authUserId) {
         throw new AuthenticationError("You must be logged in to join a game");
       }
-
+      console.log("Entering joinGame resolver");
       try {
         // Assuming that user access control is already handled to ensure
         // the user belongs to the poker group, you can proceed to check
@@ -802,9 +844,9 @@ const resolvers = {
         let game;
 
         if (gameType === "cash") {
-          game = await CashGame.findByPk(gameId, { include: Table }); // Include associated tables
+          game = await CashGame.findByPk(gameId, { include: Table });
         } else if (gameType === "tournament") {
-          game = await TournamentGame.findByPk(gameId, { include: Table }); // Include associated tables
+          game = await TournamentGame.findByPk(gameId, { include: Table });
         } else {
           throw new Error("Invalid game type");
         }
@@ -815,10 +857,10 @@ const resolvers = {
 
         // Check game eligibility based on game type and status
         if (
-          (gameType === "cash" && game.gameStatus !== "finished") ||
+          (gameType === "cash" && game.status !== "finished") ||
           (gameType === "tournament" &&
-            (game.gameStatus === "waiting" ||
-              (game.gameStatus === "ongoing" &&
+            (game.status === "waiting" ||
+              (game.status === "ongoing" &&
                 !hasLateRegistrationExpired(
                   game.startDateTime,
                   game.lateRegistrationDuration
@@ -836,70 +878,36 @@ const resolvers = {
             throw new Error("You have already registered for this game");
           }
 
-          // Find a table with available seats (playersPerTable not maxed out)
-          let tableToJoin;
+          console.log("Before findOrCreateTable");
+          // Find or create a table based on your criteria
+          let table = await findOrCreateTable(game);
+          console.log("After findOrCreateTable", table);
 
-          for (const table of game.tables) {
-            const players = (await table.getPlayers()) || []; // Retrieve associated players
-            if (players.length < game.playersPerTable) {
-              tableToJoin = table;
-              break;
-            }
-          }
-
-          if (!tableToJoin) {
-            // If all tables are full, create a new table
-            tableToJoin = await Table.create({
-              // Add any necessary attributes for the table
-              gameId: game.gameId,
-            });
-          }
-
-          // Before trying to access properties of tableToJoin
-          console.log("tableToJoin:", tableToJoin);
-          console.log("tableToJoin.players:", tableToJoin.players);
-
-          // Check if the new player joining makes the tables unevenly distributed
-          const tables = await game.getTables({ include: "players" }); // Retrieve associated tables with players
-          const totalPlayers = tables.reduce(
-            (total, table) => total + table.players.length,
-            0
+          // Get the assigned seat numbers for the table
+          const assignedSeatNumbers = table.players.map(
+            (player) => player.seatNumber
           );
-          const avgPlayersPerTable = Math.floor(totalPlayers / tables.length);
 
-          if (tableToJoin.players.length > avgPlayersPerTable) {
-            // If the new table has more players than average, redistribute players
-            for (const table of tables) {
-              if (table.players.length < avgPlayersPerTable) {
-                const playersToMove = tableToJoin.players.slice(
-                  0,
-                  tableToJoin.players.length - avgPlayersPerTable
-                );
-                for (const player of playersToMove) {
-                  player.tableId = table.tableId;
-                  await player.save();
-                }
-                break;
-              }
-            }
-          }
-
-          // Create a new player entry associating the user with the table
-          const player = await Player.create({
+          // Assign the player to the table with a seat number
+          const seatNumber = findAvailableSeatNumber(
+            assignedSeatNumbers,
+            game.playersPerTable
+          );
+          const newPlayer = await Player.create({
             userId: context.authUserId,
             gameId: game.gameId,
-            tableId: tableToJoin.tableId,
             gameType: gameType,
-            // Add other player-related fields if needed
+            tableId: table.tableId,
+            seatNumber: seatNumber,
           });
 
-          return player;
+          return newPlayer;
         } else {
-          throw new Error("You are not eligible to join this game");
+          throw new Error("You cannot join this game");
         }
       } catch (error) {
-        console.error("Error while joining the game:", error.message);
-        throw error;
+        console.error(error);
+        throw new Error("Error joining the game");
       }
     },
   },

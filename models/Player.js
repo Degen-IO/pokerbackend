@@ -15,6 +15,10 @@ const getPlayerModel = (sequelize, { DataTypes }) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    seatNumber: {
+      type: DataTypes.INTEGER,
+      allowNull: true, // Initially null until the player is seated
+    },
   });
 
   Player.associate = (models) => {

@@ -14,6 +14,7 @@ const typeDefs = gql`
     gameId: ID!
     gameType: String!
     tableId: ID!
+    seatNumber: Int
   }
 
   type Table {

@@ -6,6 +6,11 @@ const getTableModel = (sequelize, { DataTypes }) => {
       primaryKey: true,
       autoIncrement: true,
     },
+    isActiveHand: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false, // Initially set to false
+    },
   });
 
   Table.associate = (models) => {
