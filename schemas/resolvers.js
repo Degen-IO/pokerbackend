@@ -43,28 +43,20 @@ function hasLateRegistrationExpired(startDateTime, lateRegistrationDuration) {
 }
 
 const findOrCreateTable = async (game) => {
-  // Find an existing table with available seats
-  const existingTable = await Table.findOne({
+  // Find all existing tables with available seats for the game
+  const existingTables = await Table.findAll({
     where: {
       gameId: game.gameId,
     },
+    include: [Player], // Include players associated with each table
   });
 
-  if (existingTable) {
-    // Fetch players separately
-    const players = await Player.findAll({
-      where: {
-        tableId: existingTable.tableId,
-      },
-    });
-
-    // Attach players to the table
-    existingTable.players = players;
-
-    // Check if the table has available seats
-    const playersCount = players.length;
+  // Check if any existing table has available seats
+  for (const existingTable of existingTables) {
+    const playersCount = existingTable.players.length;
     if (playersCount < game.playersPerTable) {
-      return existingTable; // Found a table with available seats
+      // Found a table with available seats
+      return existingTable;
     }
   }
 
