@@ -1,5 +1,5 @@
 const request = require("supertest");
-const { initializeServer } = require("../config/testConnection");
+const { initializeServer } = require("../utils/testConnection");
 const { signToken } = require("../utils/auth");
 
 describe("Server and Middleware Tests", () => {

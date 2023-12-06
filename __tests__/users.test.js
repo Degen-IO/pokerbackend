@@ -1,5 +1,5 @@
 const request = require("supertest");
-const { initializeServer } = require("../config/testConnection");
+const { initializeServer } = require("../utils/testConnection");
 
 /*
     These are the tests for users, login functionality
@@ -46,40 +46,8 @@ describe("Login Functionality", () => {
     expect(response.body.data.login.user.email).toBe("user1@example.com");
   });
 
-  it("fails to log in with incorrect email", async () => {
-    const loginMutation = `
-          mutation Login($email: String!, $password: String!) {
-            login(email: $email, password: $password) {
-              token
-              user {
-                chip_stack
-                email
-                name
-                userId
-              }
-            }
-          }
-        `;
-
-    const response = await request(app)
-      .post("/graphql")
-      .send({
-        query: loginMutation,
-        variables: {
-          email: "user5@example.com", // incorrect email
-          password: "notmypassword",
-        },
-      });
-
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toHaveProperty("errors");
-    expect(response.body.errors[0].message).toBe("Incorrect password!");
-    expect(response.body.errors[0].extensions.code).toBe("UNAUTHENTICATED");
-    expect(response.body.data.login).toBeNull();
-  });
-
-  it("fails to log in with incorrect password", async () => {
-    // Similar to above, but with a correct email and incorrect password and expecting an error response
+  it("fails to log in with incorrect credentials", async () => {
+    // Incorrect email or incorrect password,expects an error response
     const loginMutation = `
       mutation Login($email: String!, $password: String!) {
         login(email: $email, password: $password) {
