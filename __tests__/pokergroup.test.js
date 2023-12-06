@@ -297,6 +297,31 @@ describe("PokerGroup CRUD Operations", () => {
       "An admin cannot remove themselves"
     );
   });
+  it("allows a user to remove themselves from a group", async () => {
+    const query = `
+        mutation Mutation($groupId: ID!, $userId: ID!) {
+            removeGroupMember(groupId: $groupId, userId: $userId)
+        }
+      `;
+
+    const groupId = "2";
+    const userId = "1"; // self removal of user 1
+
+    const response = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({
+        query,
+        variables: {
+          groupId,
+          userId,
+        },
+      });
+    expect(response.body.data).toHaveProperty("removeGroupMember");
+    expect(response.body.data.removeGroupMember).toContain(
+      "successfully removed"
+    );
+  });
   // Group Creation
   it("denies group creation to users who arent logged in", async () => {
     const query = `
