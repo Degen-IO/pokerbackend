@@ -48,12 +48,21 @@ const findOrCreateTable = async (game) => {
     where: {
       gameId: game.gameId,
     },
-    include: [Player], // Include players associated with the table
   });
 
   if (existingTable) {
+    // Fetch players separately
+    const players = await Player.findAll({
+      where: {
+        tableId: existingTable.tableId,
+      },
+    });
+
+    // Attach players to the table
+    existingTable.players = players;
+
     // Check if the table has available seats
-    const playersCount = existingTable.players.length;
+    const playersCount = players.length;
     if (playersCount < game.playersPerTable) {
       return existingTable; // Found a table with available seats
     }
@@ -62,8 +71,17 @@ const findOrCreateTable = async (game) => {
   // If no existing table with available seats, create a new table
   const newTable = await Table.create({
     gameId: game.gameId,
-    // Add any necessary attributes for the new table
   });
+
+  // Fetch players separately for the new table (empty array)
+  const newTablePlayers = await Player.findAll({
+    where: {
+      tableId: newTable.tableId,
+    },
+  });
+
+  // Attach players to the new table
+  newTable.players = newTablePlayers;
 
   return newTable;
 };
