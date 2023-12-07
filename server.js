@@ -3,7 +3,8 @@ const { ApolloServer } = require("@apollo/server");
 const { expressMiddleware } = require("@apollo/server/express4");
 const { authMiddleware } = require("./utils/auth");
 const cors = require("cors");
-
+const { publishMessage } = require("./redis/publishers");
+require("./redis/subscribers");
 // Import Redis configuration
 const { pubsub, sessionStore } = require("./config/redis");
 const { typeDefs, resolvers } = require("./schemas");
@@ -37,6 +38,12 @@ const startApolloServer = async (typeDefs, resolvers) => {
     } catch (err) {
       res.status(500).send(`Error connecting to Redis: ${err.message}`);
     }
+  });
+
+  app.get("/publish/:message", (req, res) => {
+    const message = req.params.message;
+    publishMessage("testChannel", message);
+    res.send(`Published message: ${message}`);
   });
 
   sequelize.sync().then(async () => {

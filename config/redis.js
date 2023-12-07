@@ -1,3 +1,4 @@
+// In your config/redis.js
 const { RedisPubSub } = require("graphql-redis-subscriptions");
 const { Redis } = require("ioredis");
 
@@ -9,11 +10,28 @@ const options = {
   },
 };
 
+// General Redis client for commands
+const redisClient = new Redis(options);
+
+// Dedicated Redis client for publishing
+const redisPublisher = new Redis(options);
+
+// Dedicated Redis client for subscribing
+const redisSubscriber = new Redis(options);
+
+// Setup for Redis PubSub (for GraphQL subscriptions)
 const pubsub = new RedisPubSub({
-  publisher: new Redis(options),
-  subscriber: new Redis(options),
+  publisher: redisPublisher,
+  subscriber: redisSubscriber,
 });
 
-const sessionStore = new Redis(options);
+// Using the general client for session store
+const sessionStore = redisClient;
 
-module.exports = { pubsub, sessionStore };
+module.exports = {
+  pubsub,
+  sessionStore,
+  redisClient,
+  redisPublisher,
+  redisSubscriber,
+};
