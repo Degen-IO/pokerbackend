@@ -4,6 +4,8 @@ const { expressMiddleware } = require("@apollo/server/express4");
 const { authMiddleware } = require("./utils/auth");
 const cors = require("cors");
 
+// Import Redis configuration
+const { pubsub, sessionStore } = require("./config/redis");
 const { typeDefs, resolvers } = require("./schemas");
 
 const PORT = process.env.PORT || 3666;
@@ -26,6 +28,16 @@ const startApolloServer = async (typeDefs, resolvers) => {
       context: authMiddleware,
     })
   );
+
+  app.get("/test-redis", async (req, res) => {
+    try {
+      await sessionStore.set("testKey", "Hello, Redis!");
+      const value = await sessionStore.get("testKey");
+      res.send(`Redis response: ${value}`);
+    } catch (err) {
+      res.status(500).send(`Error connecting to Redis: ${err.message}`);
+    }
+  });
 
   sequelize.sync().then(async () => {
     app.listen(PORT, () => {
