@@ -1,5 +1,6 @@
 const { GraphQLError } = require("graphql");
 const { Op } = require("sequelize");
+const { pubsub } = require("../config/redis");
 
 const bcrypt = require("bcryptjs");
 const {
@@ -737,6 +738,23 @@ const resolvers = {
       await game.destroy();
 
       return "Game successfully deleted";
+    },
+    sendMessage: async (_, { content }) => {
+      try {
+        // Assuming 'content' is the message content you want to send
+        await pubsub.publish("MESSAGE_POSTED", { newMessage: content });
+        // Return the message content in the expected format
+        return { content }; // Adjust this according to your Message type structure
+      } catch (error) {
+        console.error("Error publishing message:", error);
+        throw new Error("Error publishing message");
+      }
+    },
+  },
+
+  Subscription: {
+    newMessage: {
+      subscribe: () => pubsub.asyncIterator(["MESSAGE_POSTED"]),
     },
   },
 };

@@ -8,6 +8,10 @@ const typeDefs = gql`
     chip_stack: Float!
   }
 
+  type Message {
+    content: String!
+  }
+
   type PokerGroup {
     groupId: ID!
     name: String!
@@ -177,6 +181,11 @@ const typeDefs = gql`
     ): TournamentGame
 
     deleteGame(gameId: ID!, gameType: GameType!): String
+    postMessage(content: String!): String
+    sendMessage(content: String!): Message
+  }
+  type Subscription {
+    newMessage: String
   }
 `;
 
