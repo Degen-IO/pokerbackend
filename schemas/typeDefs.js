@@ -193,6 +193,8 @@ const typeDefs = gql`
     deleteGame(gameId: ID!, gameType: GameType!): String
 
     joinGame(gameId: ID!, gameType: GameType!): Player
+
+    leaveGame(gameId: ID!, gameType: GameType!): String
   }
 `;
 

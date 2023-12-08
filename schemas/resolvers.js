@@ -845,7 +845,7 @@ const resolvers = {
       if (!context.authUserId) {
         throw new AuthenticationError("You must be logged in to join a game");
       }
-      console.log("Entering joinGame resolver");
+
       try {
         // Assuming that user access control is already handled to ensure
         // the user belongs to the poker group, you can proceed to check
@@ -888,10 +888,8 @@ const resolvers = {
             throw new Error("You have already registered for this game");
           }
 
-          console.log("Before findOrCreateTable");
           // Find or create a table based on your criteria
           let table = await findOrCreateTable(game);
-          console.log("After findOrCreateTable", table);
 
           // Get the assigned seat numbers for the table
           const assignedSeatNumbers = table.players.map(
@@ -918,6 +916,49 @@ const resolvers = {
       } catch (error) {
         console.error(error);
         throw new Error("Error joining the game");
+      }
+    },
+    leaveGame: async (parent, { gameId, gameType }, context) => {
+      // Check if the user is authenticated
+      if (!context.authUserId) {
+        throw new AuthenticationError("You must be logged in to leave a game");
+      }
+
+      try {
+        // Find the game based on gameId and gameType
+        let game;
+
+        if (gameType === "cash") {
+          game = await CashGame.findByPk(gameId, { include: Table });
+        } else if (gameType === "tournament") {
+          game = await TournamentGame.findByPk(gameId, { include: Table });
+        } else {
+          throw new Error("Invalid game type");
+        }
+
+        if (!game) {
+          throw new Error("Game not found");
+        }
+
+        // Find the player to remove from the game
+        const playerToRemove = await Player.findOne({
+          where: {
+            userId: context.authUserId,
+            gameId: game.gameId,
+          },
+        });
+
+        if (!playerToRemove) {
+          throw new Error("Player not found in the game");
+        }
+
+        // Remove the player from the game
+        await playerToRemove.destroy();
+
+        return "Successfully left the game";
+      } catch (error) {
+        console.error("Error while leaving the game:", error.message);
+        throw new Error("Error leaving the game");
       }
     },
   },
