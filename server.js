@@ -51,7 +51,6 @@ const startApolloServer = async () => {
     "/graphql",
     cors(),
     express.json(),
-
     expressMiddleware(server, { context: authMiddleware })
   );
 
