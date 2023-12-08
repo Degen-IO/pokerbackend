@@ -739,12 +739,12 @@ const resolvers = {
 
       return "Game successfully deleted";
     },
+    // This is just a test mutation that interacts with redis
     sendMessage: async (_, { content }) => {
       try {
-        // Assuming 'content' is the message content you want to send
+        // Content is just the message you wish to send, published to the "message_posted" channel.
         await pubsub.publish("MESSAGE_POSTED", { newMessage: content });
-        // Return the message content in the expected format
-        return { content }; // Adjust this according to your Message type structure
+        return { content }; // returns the content in the Apollo Playground just for verification of sender
       } catch (error) {
         console.error("Error publishing message:", error);
         throw new Error("Error publishing message");
@@ -754,7 +754,7 @@ const resolvers = {
 
   Subscription: {
     newMessage: {
-      subscribe: () => pubsub.asyncIterator(["MESSAGE_POSTED"]),
+      subscribe: () => pubsub.asyncIterator(["MESSAGE_POSTED"]), // This will subscribe to the message_posted channel (Need 2 Apollo instances to test)
     },
   },
 };
