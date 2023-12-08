@@ -11,7 +11,7 @@ const { makeExecutableSchema } = require("@graphql-tools/schema");
 const { WebSocketServer } = require("ws");
 const { useServer } = require("graphql-ws/lib/use/ws");
 const cors = require("cors");
-
+const { authMiddleware } = require("./utils/auth");
 const { publishMessage } = require("./redis/publishers");
 require("./redis/subscribers");
 const { pubsub, sessionStore } = require("./config/redis");
@@ -47,7 +47,13 @@ const server = new ApolloServer({
 const startApolloServer = async () => {
   await server.start();
 
-  app.use("/graphql", cors(), express.json(), expressMiddleware(server));
+  app.use(
+    "/graphql",
+    cors(),
+    express.json(),
+
+    expressMiddleware(server, { context: authMiddleware })
+  );
 
   app.get("/test-redis", async (req, res) => {
     try {
