@@ -955,6 +955,21 @@ const resolvers = {
         // Remove the player from the game
         await playerToRemove.destroy();
 
+        // Check if the table is empty after removing the player
+        const playersAtTable = await Player.count({
+          where: {
+            tableId: playerToRemove.tableId,
+          },
+        });
+
+        if (playersAtTable === 0) {
+          // If the table is empty, remove it
+          const tableToRemove = await Table.findByPk(playerToRemove.tableId);
+          if (tableToRemove) {
+            await tableToRemove.destroy();
+          }
+        }
+
         return "Successfully left the game";
       } catch (error) {
         console.error("Error while leaving the game:", error.message);
