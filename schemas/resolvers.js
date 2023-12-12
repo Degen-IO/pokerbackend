@@ -818,7 +818,6 @@ const resolvers = {
 
           // Find or create a table based on your criteria
           let table = await findOrCreateTable(game);
-          console.log("CONSSOOELELKJHSLKJHFLDKSJH", table);
 
           // Get the assigned seat numbers for the table
           const assignedSeatNumbers = table.players.map(
