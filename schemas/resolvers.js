@@ -16,83 +16,11 @@ const {
   Deck,
 } = require("../models");
 const { signToken } = require("../utils/auth");
-
-function hasLateRegistrationExpired(startDateTime, lateRegistrationDuration) {
-  const currentDateTime = new Date();
-  const registrationEndTime = new Date(startDateTime);
-
-  //Switch the enum value passed to a minutes value and add it to registrationEndTime
-  switch (lateRegistrationDuration) {
-    case "none":
-      // If late registration is not allowed, the end time is the same as start time
-      break;
-    case "_30min":
-      registrationEndTime.setMinutes(registrationEndTime.getMinutes() + 30);
-      break;
-    case "_60min":
-      registrationEndTime.setMinutes(registrationEndTime.getMinutes() + 60);
-      break;
-    case "_90min":
-      registrationEndTime.setMinutes(registrationEndTime.getMinutes() + 90);
-      break;
-    default:
-      throw new Error("Invalid lateRegistrationDuration value");
-  }
-  //return true or false so we know if they can join or not
-  return currentDateTime > registrationEndTime;
-}
-
-const findOrCreateTable = async (game) => {
-  // Find all existing tables with available seats for the game
-  const existingTables = await Table.findAll({
-    where: {
-      gameId: game.gameId,
-    },
-    include: [Player], // Include players associated with each table
-  });
-
-  // Check if any existing table has available seats
-  for (const existingTable of existingTables) {
-    const playersCount = existingTable.players.length;
-    if (playersCount < game.playersPerTable) {
-      // Found a table with available seats
-      return existingTable;
-    }
-  }
-
-  // If no existing table with available seats, create a new table
-  const newTable = await Table.create({
-    gameId: game.gameId,
-  });
-
-  // Fetch players separately for the new table (empty array)
-  const newTablePlayers = await Player.findAll({
-    where: {
-      tableId: newTable.tableId,
-    },
-  });
-
-  // Attach players to the new table
-  newTable.players = newTablePlayers;
-
-  return newTable;
-};
-
-const findAvailableSeatNumber = (assignedSeatNumbers, playersPerTable) => {
-  // Create an array representing all possible seat numbers
-  const allSeatNumbers = Array.from(
-    { length: playersPerTable },
-    (_, index) => index + 1
-  );
-
-  // Filter out the assigned seat numbers
-  const availableSeatNumbers = allSeatNumbers.filter(
-    (seatNumber) => !assignedSeatNumbers.includes(seatNumber)
-  );
-
-  // If there are available seat numbers, return the first one; otherwise, return null
-  return availableSeatNumbers.length > 0 ? availableSeatNumbers[0] : null;
-};
+const { findAvailableSeatNumber } = require("../utils/findAvailableSeatNumber");
+const { findOrCreateTable } = require("../utils/findOrCreateTable");
+const {
+  hasLateRegistrationExpired,
+} = require("../utils/hasLateRegistrationExpired");
 
 const resolvers = {
   Query: {
@@ -890,6 +818,7 @@ const resolvers = {
 
           // Find or create a table based on your criteria
           let table = await findOrCreateTable(game);
+          console.log("CONSSOOELELKJHSLKJHFLDKSJH", table);
 
           // Get the assigned seat numbers for the table
           const assignedSeatNumbers = table.players.map(

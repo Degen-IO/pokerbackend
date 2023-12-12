@@ -4,6 +4,7 @@ const { Player, Table } = require("../models");
 
 const { makeFutureDate } = require("../utils/dateMakersTest");
 const { loginUserAndGetToken } = require("../utils/testUserLogin");
+
 /*
     These are the tests for joinGame and leaveGame mutations involving the creation of Players and Tables 
     
@@ -138,7 +139,9 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     expect(joinGameResponse.body).toHaveProperty("data");
     expect(joinGameResponse.body.data).toHaveProperty("joinGame");
     // Check if the returned data has the expected structure
+
     const { joinGame } = joinGameResponse.body.data;
+
     expect(joinGame).toHaveProperty("playerId");
     expect(joinGame).toHaveProperty("userId");
     expect(joinGame).toHaveProperty("gameId");
