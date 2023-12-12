@@ -8,12 +8,19 @@ const {
   PokerGroup,
   CashGame,
   TournamentGame,
+  Player,
+  Table,
   PlayerAction,
   PlayerHand,
   Card,
   Deck,
 } = require("../models");
 const { signToken } = require("../utils/auth");
+const { findAvailableSeatNumber } = require("../utils/findAvailableSeatNumber");
+const { findOrCreateTable } = require("../utils/findOrCreateTable");
+const {
+  hasLateRegistrationExpired,
+} = require("../utils/hasLateRegistrationExpired");
 
 const resolvers = {
   Query: {
@@ -596,6 +603,12 @@ const resolvers = {
           userId: context.authUserId, // Associate with the user
         });
 
+        // Create the initial table for the Cash Game
+        await Table.create({
+          gameId: cashGame.gameId,
+          // Add any necessary attributes for the table
+        });
+
         return cashGame;
       } catch (error) {
         console.error("Error while creating CashGame:", error.message);
@@ -682,6 +695,12 @@ const resolvers = {
         userId: context.authUserId, // Associate with the user
       });
 
+      // Create the initial table for the Cash Game
+      await Table.create({
+        gameId: tournamentGame.gameId,
+        // Add any necessary attributes for the table
+      });
+
       return tournamentGame;
     },
     deleteGame: async (parent, { gameId, gameType }, context) => {
@@ -733,10 +752,187 @@ const resolvers = {
         );
       }
 
+      // Find and delete all associated tables of the game
+      const tables = await Table.findAll({
+        where: {
+          gameId: game.gameId,
+        },
+      });
+
+      for (const table of tables) {
+        await table.destroy();
+      }
+
       // Delete the game
       await game.destroy();
 
       return "Game successfully deleted";
+    },
+    joinGame: async (parent, { gameId, gameType }, context) => {
+      // Check if the user is authenticated
+      if (!context.authUserId) {
+        throw new AuthenticationError("You must be logged in to join a game");
+      }
+
+      try {
+        // Assuming that user access control is already handled to ensure
+        // the user belongs to the poker group, you can proceed to check
+        // game eligibility.
+
+        let game;
+
+        if (gameType === "cash") {
+          game = await CashGame.findByPk(gameId, { include: Table });
+        } else if (gameType === "tournament") {
+          game = await TournamentGame.findByPk(gameId, { include: Table });
+        } else {
+          throw new Error("Invalid game type");
+        }
+
+        if (!game) {
+          throw new Error("Game not found");
+        }
+
+        // Check game eligibility based on game type and status
+        if (
+          (gameType === "cash" && game.status !== "finished") ||
+          (gameType === "tournament" &&
+            (game.status === "waiting" ||
+              (game.status === "ongoing" &&
+                !hasLateRegistrationExpired(
+                  game.startDateTime,
+                  game.lateRegistrationDuration
+                ))))
+        ) {
+          // Check if the user has already registered for the game
+          const existingPlayer = await Player.findOne({
+            where: {
+              userId: context.authUserId,
+              gameId: game.gameId,
+            },
+          });
+
+          if (existingPlayer) {
+            throw new Error("You have already registered for this game");
+          }
+
+          // Find or create a table based on your criteria
+          let table = await findOrCreateTable(game);
+
+          // Get the assigned seat numbers for the table
+          const assignedSeatNumbers = table.players.map(
+            (player) => player.seatNumber
+          );
+
+          // Assign the player to the table with a seat number
+          const seatNumber = findAvailableSeatNumber(
+            assignedSeatNumbers,
+            game.playersPerTable
+          );
+          const newPlayer = await Player.create({
+            userId: context.authUserId,
+            gameId: game.gameId,
+            gameType: gameType,
+            tableId: table.tableId,
+            seatNumber: seatNumber,
+          });
+
+          return newPlayer;
+        } else {
+          throw new Error("You cannot join this game");
+        }
+      } catch (error) {
+        console.error(error);
+        throw new Error("Error joining the game");
+      }
+    },
+    leaveGame: async (parent, { gameId, gameType }, context) => {
+      // Check if the user is authenticated
+      if (!context.authUserId) {
+        throw new AuthenticationError("You must be logged in to leave a game");
+      }
+
+      try {
+        // Find the game based on gameId and gameType
+        let game;
+
+        if (gameType === "cash") {
+          game = await CashGame.findByPk(gameId, { include: Table });
+        } else if (gameType === "tournament") {
+          game = await TournamentGame.findByPk(gameId, { include: Table });
+        } else {
+          throw new Error("Invalid game type");
+        }
+
+        if (!game) {
+          throw new Error("Game not found");
+        }
+
+        // Find the player to remove from the game
+        const playerToRemove = await Player.findOne({
+          where: {
+            userId: context.authUserId,
+            gameId: game.gameId,
+          },
+        });
+
+        if (!playerToRemove) {
+          throw new Error("Player not found in the game");
+        }
+
+        // Remove the player from the game
+        await playerToRemove.destroy();
+
+        // Check if the table is empty after removing the player
+        const playersAtTable = await Player.count({
+          where: {
+            tableId: playerToRemove.tableId,
+          },
+        });
+
+        if (playersAtTable === 0) {
+          // If the table is empty, remove it
+          const tableToRemove = await Table.findByPk(playerToRemove.tableId);
+          if (tableToRemove) {
+            await tableToRemove.destroy();
+          }
+        }
+
+        return "Successfully left the game";
+      } catch (error) {
+        console.error("Error while leaving the game:", error.message);
+        throw new Error("Error leaving the game");
+      }
+    },
+    updateGameStatus: async (_, { gameId, gameType, status }, context) => {
+      try {
+        let game;
+
+        if (gameType === "cash") {
+          game = await CashGame.findByPk(gameId);
+        } else if (gameType === "tournament") {
+          game = await TournamentGame.findByPk(gameId);
+        } else {
+          throw new Error("Invalid game type");
+        }
+
+        if (!game) {
+          throw new Error("Game not found");
+        }
+
+        // Update the game status
+        await game.update({ status: status });
+
+        return {
+          message: "Game status updated successfully",
+          gameId: game.gameId,
+          gameType: gameType,
+          status: game.status,
+        };
+      } catch (error) {
+        console.error(error);
+        throw new Error("Failed to update game status");
+      }
     },
   },
 };

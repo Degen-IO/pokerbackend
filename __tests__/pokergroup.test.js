@@ -101,7 +101,7 @@ describe("PokerGroup CRUD Operations", () => {
         query,
         variables: {
           groupId,
-          joinPassword: "password1",
+          joinPassword: "password",
         },
       });
     expect(response.body.data.requestToJoinGroup.groupId === "1");
