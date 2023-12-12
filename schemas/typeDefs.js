@@ -69,6 +69,13 @@ const typeDefs = gql`
     user: User
   }
 
+  type GameStatusUpdateResponse {
+    message: String!
+    gameId: ID!
+    gameType: GameType!
+    status: GameStatus!
+  }
+
   type Auth {
     token: ID!
     user: User
@@ -195,6 +202,12 @@ const typeDefs = gql`
     joinGame(gameId: ID!, gameType: GameType!): Player
 
     leaveGame(gameId: ID!, gameType: GameType!): String
+
+    updateGameStatus(
+      gameId: ID!
+      gameType: GameType!
+      status: GameStatus!
+    ): GameStatusUpdateResponse
   }
 `;
 

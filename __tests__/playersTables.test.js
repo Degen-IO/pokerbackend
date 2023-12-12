@@ -10,10 +10,12 @@ const { loginUserAndGetToken } = require("../utils/testUserLogin");
     Includes:
     - Tests for Player and Table create and destroy 
     - Tests that an empty seat is filled before trying to create new table
+    - Tests that a games staus can be changed
+    - Tests that a finsihed game cannot be joined
   
 */
 
-describe("joinGame leaveGame operations", () => {
+describe("joinGame, leaveGame, updateGameStatus operations", () => {
   let app, server, sequelize;
   let authToken1;
   let authToken2;
@@ -414,5 +416,75 @@ describe("joinGame leaveGame operations", () => {
       });
     const { joinGame } = joinGameResponse.body.data;
     expect(joinGame.tableId).toBe(initialTableId);
+  });
+
+  it("changes the status of a game to 'finished'", async () => {
+    const updateGameStatusQuery = `
+      mutation UpdateGameStatus($gameId: ID!, $gameType: GameType!, $status: GameStatus!) {
+        updateGameStatus(gameId: $gameId, gameType: $gameType, status: $status) {
+          message
+          gameId
+          gameType
+          status
+        }
+      }
+    `;
+
+    // Variables for updating the game status
+    const updateGameStatusVariables = {
+      gameId: cashGameId,
+      gameType: "cash",
+      status: "finished",
+    };
+
+    // Execute the mutation to update the game status
+    const updateGameStatusResponse = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken1}`) // Use admin token or another user with the necessary permissions
+      .send({
+        query: updateGameStatusQuery,
+        variables: updateGameStatusVariables,
+      });
+
+    // Ensure the mutation response is as expected
+    const { updateGameStatus } = updateGameStatusResponse.body.data;
+    expect(updateGameStatus.message).toBe("Game status updated successfully");
+    expect(updateGameStatus.gameId).toBe(cashGameId);
+    expect(updateGameStatus.gameType).toBe("cash");
+    expect(updateGameStatus.status).toBe("finished");
+  });
+
+  it("fails to allow a user to join a finished game", async () => {
+    const joinGameQuery = `
+      mutation JoinGame($gameId: ID!, $gameType: GameType!) {
+        joinGame(gameId: $gameId, gameType: $gameType) {
+          playerId
+          userId
+          gameId
+          gameType
+          tableId
+          seatNumber
+        }
+      }
+    `;
+
+    // Variables for joining the game
+    const joinGameVariables = {
+      gameId: cashGameId,
+      gameType: "cash",
+    };
+
+    // Execute the mutation to join the game
+    const joinGameResponse = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken2}`)
+      .send({
+        query: joinGameQuery,
+        variables: joinGameVariables,
+      });
+
+    // Ensure the mutation fails as expected
+    const { joinGame } = joinGameResponse.body.data;
+    expect(joinGame).toBeNull(); // or check for specific error message in response
   });
 });

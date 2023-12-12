@@ -976,6 +976,36 @@ const resolvers = {
         throw new Error("Error leaving the game");
       }
     },
+    updateGameStatus: async (_, { gameId, gameType, status }, context) => {
+      try {
+        let game;
+
+        if (gameType === "cash") {
+          game = await CashGame.findByPk(gameId);
+        } else if (gameType === "tournament") {
+          game = await TournamentGame.findByPk(gameId);
+        } else {
+          throw new Error("Invalid game type");
+        }
+
+        if (!game) {
+          throw new Error("Game not found");
+        }
+
+        // Update the game status
+        await game.update({ status: status });
+
+        return {
+          message: "Game status updated successfully",
+          gameId: game.gameId,
+          gameType: gameType,
+          status: game.status,
+        };
+      } catch (error) {
+        console.error(error);
+        throw new Error("Failed to update game status");
+      }
+    },
   },
 };
 
