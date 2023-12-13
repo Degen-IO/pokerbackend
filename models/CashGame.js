@@ -77,6 +77,8 @@ const getCashGameModel = (sequelize, { DataTypes }) => {
     CashGame.hasMany(models.PlayerHand, { foreignKey: "gameId" });
 
     CashGame.hasMany(models.PlayerAction, { foreignKey: "gameId" });
+
+    CashGame.hasMany(models.Table, { foreignKey: "gameId" });
   };
 
   return CashGame;

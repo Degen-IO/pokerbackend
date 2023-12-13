@@ -8,8 +8,18 @@ const typeDefs = gql`
     chip_stack: Float!
   }
 
-  type Message {
-    content: String!
+  type Player {
+    playerId: ID!
+    userId: ID!
+    gameId: ID!
+    gameType: String!
+    tableId: ID!
+    seatNumber: Int
+  }
+
+  type Table {
+    tableId: ID!
+    gameId: ID!
   }
 
   type PokerGroup {
@@ -57,6 +67,13 @@ const typeDefs = gql`
   type UserUpdateResponse {
     message: String!
     user: User
+  }
+
+  type GameStatusUpdateResponse {
+    message: String!
+    gameId: ID!
+    gameType: GameType!
+    status: GameStatus!
   }
 
   type Auth {
@@ -181,11 +198,27 @@ const typeDefs = gql`
     ): TournamentGame
 
     deleteGame(gameId: ID!, gameType: GameType!): String
+
+    joinGame(gameId: ID!, gameType: GameType!): Player
+
+    leaveGame(gameId: ID!, gameType: GameType!): String
+
+    updateGameStatus(
+      gameId: ID!
+      gameType: GameType!
+      status: GameStatus!
+    ): GameStatusUpdateResponse
+
     postMessage(content: String!): String
     sendMessage(content: String!): Message
   }
+
   type Subscription {
     newMessage: String
+  }
+
+  type Message {
+    content: String!
   }
 `;
 

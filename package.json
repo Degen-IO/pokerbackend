@@ -24,6 +24,7 @@
     "podman:logs:redis": "podman-compose -f ./docker/local/docker-compose.yml logs -f --tail 200 redis",
     "podman:logs": "npm run podman:logs:backend & npm run podman:logs:db & npm run podman:logs:pgadmin & npm run podman:logs:redis",
     "podman:start": "podman-compose -f ./docker/local/docker-compose.yml start && npm run podman:logs",
+    "podman:start-dev": "podman-compose -f ./docker/local/docker-compose.yml start && npm run podman:logs:backend",
     "podman:stop": "podman-compose -f ./docker/local/docker-compose.yml stop",
     "podman:restart": "podman-compose -f ./docker/local/docker-compose.yml restart",
     "podman:rebuild": "podman-compose -f ./docker/local/docker-compose.yml up --force-recreate --build --no-start",
