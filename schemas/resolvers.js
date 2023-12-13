@@ -1,5 +1,6 @@
 const { GraphQLError } = require("graphql");
 const { Op } = require("sequelize");
+const { pubsub } = require("../config/redis");
 
 const bcrypt = require("bcryptjs");
 const {
@@ -768,6 +769,7 @@ const resolvers = {
 
       return "Game successfully deleted";
     },
+
     joinGame: async (parent, { gameId, gameType }, context) => {
       // Check if the user is authenticated
       if (!context.authUserId) {
@@ -933,6 +935,22 @@ const resolvers = {
         console.error(error);
         throw new Error("Failed to update game status");
       }
+    },
+    // This is just a test mutation that interacts with redis
+    sendMessage: async (_, { content }) => {
+      try {
+        // Content is just the message you wish to send, published to the "message_posted" channel.
+        await pubsub.publish("MESSAGE_POSTED", { newMessage: content });
+        return { content }; // returns the content in the Apollo Playground just for verification of sender
+      } catch (error) {
+        console.error("Error publishing message:", error);
+        throw new Error("Error publishing message");
+      }
+    },
+  },
+  Subscription: {
+    newMessage: {
+      subscribe: () => pubsub.asyncIterator(["MESSAGE_POSTED"]), // This will subscribe to the message_posted channel (Need 2 Apollo instances to test)
     },
   },
 };

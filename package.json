@@ -39,7 +39,10 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "graphql": "^16.8.1",
+    "graphql-redis-subscriptions": "^2.6.0",
     "graphql-tag": "^2.12.6",
+    "graphql-ws": "^5.14.2",
+    "ioredis": "^5.3.2",
     "jest": "^29.7.0",
     "jsonwebtoken": "^9.0.0",
     "luxon": "^3.4.3",
@@ -47,7 +50,8 @@
     "pg-promise": "^11.5.4",
     "sequelize": "^6.33.0",
     "sqlite3": "^5.1.6",
-    "supertest": "^6.3.3"
+    "supertest": "^6.3.3",
+    "ws": "^8.14.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.3"

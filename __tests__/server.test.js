@@ -1,7 +1,6 @@
 const request = require("supertest");
 const { initializeServer } = require("../utils/testConnection");
 const { signToken } = require("../utils/auth");
-
 describe("Server and Middleware Tests", () => {
   let app, server, sequelize, validUserId, validToken, updateUserMutation;
 

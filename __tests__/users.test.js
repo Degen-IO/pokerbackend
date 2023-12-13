@@ -1,6 +1,5 @@
 const request = require("supertest");
 const { initializeServer } = require("../utils/testConnection");
-
 /*
     These are the tests for users, login functionality
 */

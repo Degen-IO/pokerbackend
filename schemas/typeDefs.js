@@ -208,6 +208,17 @@ const typeDefs = gql`
       gameType: GameType!
       status: GameStatus!
     ): GameStatusUpdateResponse
+
+    postMessage(content: String!): String
+    sendMessage(content: String!): Message
+  }
+
+  type Subscription {
+    newMessage: String
+  }
+
+  type Message {
+    content: String!
   }
 `;
 
