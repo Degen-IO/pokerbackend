@@ -56,7 +56,6 @@ const startApolloServer = async () => {
 
   app.get("/test-redis", async (req, res) => {
     try {
-      console.log(sessionStore);
       await sessionStore.set("testKey", "Hello, Redis!");
       const value = await sessionStore.get("testKey");
       res.send(`Redis response: ${value}`);
