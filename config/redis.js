@@ -2,36 +2,46 @@
 const { RedisPubSub } = require("graphql-redis-subscriptions");
 const { Redis } = require("ioredis");
 
-const options = {
-  host: process.env.REDIS_HOST || "redis",
-  port: parseInt(process.env.REDIS_PORT || "6379"),
-  retryStrategy: (times) => {
-    return Math.min(times * 50, 2000);
-  },
-};
+let redisClient, redisPublisher, redisSubscriber, pubsub, sessionStore;
 
-// General Redis client for commands
-const redisClient = new Redis(options);
+// Same setup as sequelize connection, TO DO: setup redis testing instance
+if (process.env.NODE_ENV !== "test") {
+  const options = {
+    host: process.env.REDIS_HOST || "redis",
+    port: parseInt(process.env.REDIS_PORT || "6379"),
+    retryStrategy: (times) => {
+      return Math.min(times * 50, 2000);
+    },
+  };
 
-// Dedicated Redis client for publishing
-const redisPublisher = new Redis(options);
+  // General Redis client for commands
+  redisClient = new Redis(options);
 
-// Dedicated Redis client for subscribing
-const redisSubscriber = new Redis(options);
+  // Dedicated Redis client for publishing
+  redisPublisher = new Redis(options);
 
-// Setup for Redis PubSub (for GraphQL subscriptions)
-const pubsub = new RedisPubSub({
-  publisher: redisPublisher,
-  subscriber: redisSubscriber,
-});
+  // Dedicated Redis client for subscribing
+  redisSubscriber = new Redis(options);
 
-// Using the general client for session store
-const sessionStore = redisClient;
+  // Setup for Redis PubSub (for GraphQL subscriptions)
+  pubsub = new RedisPubSub({
+    publisher: redisPublisher,
+    subscriber: redisSubscriber,
+  });
 
+  // Using the general client for session store
+  sessionStore = redisClient;
+}
 module.exports = {
   pubsub,
   sessionStore,
   redisClient,
   redisPublisher,
   redisSubscriber,
+  // This may be used for tests in the future...?
+  closeRedisConnections: async function () {
+    await redisClient.quit();
+    await redisPublisher.quit();
+    await redisSubscriber.quit();
+  },
 };

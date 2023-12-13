@@ -4,7 +4,6 @@ const { Player, Table } = require("../models");
 
 const { makeFutureDate } = require("../utils/dateMakersTest");
 const { loginUserAndGetToken } = require("../utils/testUserLogin");
-
 /*
     These are the tests for joinGame and leaveGame mutations involving the creation of Players and Tables 
     
