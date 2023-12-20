@@ -2,7 +2,7 @@ const sequelize = require("../config/connection");
 const Sequelize = require("sequelize");
 
 const { getUserModel } = require("./User");
-const { getCardModel } = require("./Card");
+// const { getCardModel } = require("./Card");
 const { getDeckModel } = require("./Deck");
 const { getTableModel } = require("./Table");
 const { getUserGroupRoleModel } = require("./UserGroupRole");
@@ -23,7 +23,7 @@ const models = {
   CashGame: getCashGameModel(sequelize, Sequelize),
   TournamentGame: getTournamentGameModel(sequelize, Sequelize),
   PokerGroup: getPokerGroupModel(sequelize, Sequelize),
-  Card: getCardModel(sequelize, Sequelize),
+  // Card: getCardModel(sequelize, Sequelize),
   Deck: getDeckModel(sequelize, Sequelize),
   Table: getTableModel(sequelize, Sequelize),
   BlindLevel: getBlindLevelModel(sequelize, Sequelize),

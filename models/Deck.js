@@ -1,3 +1,4 @@
+// deck.js
 const getDeckModel = (sequelize, { DataTypes }) => {
   const Deck = sequelize.define("deck", {
     id: {
@@ -6,34 +7,59 @@ const getDeckModel = (sequelize, { DataTypes }) => {
       primaryKey: true,
       autoIncrement: true,
     },
+    rank: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        isIn: [
+          [
+            "TWO",
+            "THREE",
+            "FOUR",
+            "FIVE",
+            "SIX",
+            "SEVEN",
+            "EIGHT",
+            "NINE",
+            "TEN",
+            "JACK",
+            "QUEEN",
+            "KING",
+            "ACE",
+          ],
+        ],
+      },
+    },
+    suit: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        isIn: [["CLUBS", "DIAMONDS", "HEARTS", "SPADES"]],
+      },
+    },
   });
 
-  // Define the one-to-many relationship between Deck and Card
-  Deck.associate = (models) => {
-    Deck.hasMany(models.Card, { as: "cards" });
-  };
+  // Add a method to get a shuffled deck
+  // Add a method to get a shuffled deck
+  Deck.getShuffledDeck = async () => {
+    try {
+      const cards = await Deck.findAll(); // Get all cards from the database
+      if (!cards || cards.length === 0) {
+        throw new Error("No cards found in the database.");
+      }
 
-  // Add a shuffle method to the Deck model
-  Deck.prototype.shuffle = async function () {
-    const cards = await this.getCards(); // Assuming you have a getter method like this
+      // Shuffle the cards using the provided logic
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
 
-    if (cards.length < 2) {
-      return this; // No need to shuffle if there are 0 or 1 cards
+      // console.log("Shuffled deck:", cards); // Log the shuffled deck for debugging
+      return cards;
+    } catch (error) {
+      console.error("Error getting shuffled deck:", error);
+      throw error;
     }
-
-    const shuffledCards = [...cards];
-
-    for (let i = shuffledCards.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledCards[i], shuffledCards[j]] = [
-        shuffledCards[j],
-        shuffledCards[i],
-      ];
-    }
-
-    // Update the deck with the shuffled cards
-    await this.setCards(shuffledCards); // Assuming you have a setter method like this
-    return this;
   };
 
   return Deck;
