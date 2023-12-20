@@ -27,9 +27,13 @@ function distributeCards(numPlayers, deck, dealerSeat, occupiedSeats) {
 
   const handState = {
     players: Array.from({ length: numPlayers }, () => ({ holeCards: [] })),
-    burn: [],
-    flop: [],
+    burn1: null,
+    flop1: null,
+    flop2: null,
+    flop3: null,
+    burn2: null,
     turn: null,
+    burn3: null,
     river: null,
   };
   // console.log(handState.players);
@@ -38,21 +42,20 @@ function distributeCards(numPlayers, deck, dealerSeat, occupiedSeats) {
   for (let i = 0; i < 2; i++) {
     for (let j = 0; j < numPlayers; j++) {
       const relativePlayerIndex = (startingPlayerIndex + j) % numPlayers;
-      // const playerIndex = occupiedSeats[relativePlayerIndex];
-      handState.players[relativePlayerIndex].holeCards.push(deck.pop());
+      handState.players[relativePlayerIndex].holeCards.push(deck.shift());
     }
   }
 
-  handState.burn.push(deck.pop());
+  handState.burn1 = deck.shift();
 
   for (let i = 0; i < 3; i++) {
-    handState.flop.push(deck.pop());
+    handState[`flop${i + 1}`] = deck.shift();
   }
 
-  handState.burn.push(deck.pop());
-  handState.turn = deck.pop();
-  handState.burn.push(deck.pop());
-  handState.river = deck.pop();
+  handState.burn2 = deck.shift();
+  handState.turn = deck.shift();
+  handState.burn3 = deck.shift();
+  handState.river = deck.shift();
 
   return handState;
 }
@@ -71,7 +74,42 @@ async function run() {
     occupiedSeats
   );
 
-  console.log(initialHandState);
+  // Log each player's hole cards
+  initialHandState.players.forEach((player, index) => {
+    console.log(
+      `Player ${occupiedSeats[index]} hole cards:`,
+      player.holeCards.map(
+        (card) =>
+          `id:${card.dataValues.id}, rank:"${card.dataValues.rank}", suit: "${card.dataValues.suit}"`
+      )
+    );
+  });
+
+  // Log burn, flop, turn, and river cards
+  console.log(
+    `burn1: id:${initialHandState.burn1.dataValues.id}, rank:"${initialHandState.burn1.dataValues.rank}", suit: "${initialHandState.burn1.dataValues.suit}"`
+  );
+  console.log(
+    `flop1: id:${initialHandState.flop1.dataValues.id}, rank:"${initialHandState.flop1.dataValues.rank}", suit: "${initialHandState.flop1.dataValues.suit}"`
+  );
+  console.log(
+    `flop2: id:${initialHandState.flop2.dataValues.id}, rank:"${initialHandState.flop2.dataValues.rank}", suit: "${initialHandState.flop2.dataValues.suit}"`
+  );
+  console.log(
+    `flop3: id:${initialHandState.flop3.dataValues.id}, rank:"${initialHandState.flop3.dataValues.rank}", suit: "${initialHandState.flop3.dataValues.suit}"`
+  );
+  console.log(
+    `burn2: id:${initialHandState.burn2.dataValues.id}, rank:"${initialHandState.burn2.dataValues.rank}", suit: "${initialHandState.burn2.dataValues.suit}"`
+  );
+  console.log(
+    `turn: id:${initialHandState.turn.dataValues.id}, rank:"${initialHandState.turn.dataValues.rank}", suit: "${initialHandState.turn.dataValues.suit}"`
+  );
+  console.log(
+    `burn3: id:${initialHandState.burn3.dataValues.id}, rank:"${initialHandState.burn3.dataValues.rank}", suit: "${initialHandState.burn3.dataValues.suit}"`
+  );
+  console.log(
+    `river: id:${initialHandState.river.dataValues.id}, rank:"${initialHandState.river.dataValues.rank}", suit: "${initialHandState.river.dataValues.suit}"`
+  );
 }
 
 // Call the async function
