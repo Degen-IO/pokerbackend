@@ -5,7 +5,6 @@ async function createShuffledDeck() {
   try {
     // Use the getShuffledDeck method from the Deck model
     const deck = await Card.getShuffledDeck();
-    // console.log(deck);
     return deck;
   } catch (error) {
     console.error("Error creating a shuffled deck:", error);
@@ -16,7 +15,6 @@ async function createShuffledDeck() {
 //this should take in number of current players, as well as dealer position and seat #s that are occupied at the table and deal hole cards and then community cards before any actions take place.
 function distributeCards(numPlayers, deck, dealerSeat, occupiedSeats) {
   // Ensure deck has enough cards for the hand
-  // console.log("Number of cards in the deck:", deck);
   if (!deck || deck.length < numPlayers * 2 + 5) {
     console.error("Invalid deck or not enough cards in the deck for the hand:");
     throw new Error("Not enough cards in the deck for the hand.");
@@ -36,7 +34,6 @@ function distributeCards(numPlayers, deck, dealerSeat, occupiedSeats) {
     burn3: null,
     river: null,
   };
-  // console.log(handState.players);
 
   // Deal cards to players starting from the dealer's left, skipping empty seats
   for (let i = 0; i < 2; i++) {
