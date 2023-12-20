@@ -1,10 +1,10 @@
-const { Deck } = require("../models");
+const { Card } = require("../models");
 
 // Define the createShuffledDeck function
 async function createShuffledDeck() {
   try {
     // Use the getShuffledDeck method from the Deck model
-    const deck = await Deck.getShuffledDeck();
+    const deck = await Card.getShuffledDeck();
     // console.log(deck);
     return deck;
   } catch (error) {
