@@ -946,6 +946,7 @@ const resolvers = {
         // Retrieve necessary information from the database or cache
         const table = await Table.findByPk(tableId, { include: Player });
         const numPlayers = table.players.length;
+        // const dealerSeat = table.dealerSeat;
         const dealerSeat = 1; /* logic to determine the dealerSeat */
         const occupiedSeats = table.players.map((player) => player.seatNumber);
 

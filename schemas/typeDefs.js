@@ -20,6 +20,7 @@ const typeDefs = gql`
   type Table {
     tableId: ID!
     gameId: ID!
+    dealerSeat: Int
   }
 
   type PokerGroup {
