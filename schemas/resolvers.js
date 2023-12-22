@@ -906,7 +906,8 @@ const resolvers = {
         throw new Error("Error leaving the game");
       }
     },
-    updateGameStatus: async (_, { gameId, gameType, status }, context) => {
+    updateGameStatus: async (parent, { gameId, gameType, status }, context) => {
+      console.log("WHATSCUMINTHRU:...", gameId);
       try {
         let game;
 
