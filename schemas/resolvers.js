@@ -22,6 +22,10 @@ const { findOrCreateTable } = require("../utils/findOrCreateTable");
 const {
   hasLateRegistrationExpired,
 } = require("../utils/hasLateRegistrationExpired");
+const {
+  createShuffledDeck,
+  distributeCards,
+} = require("../utils/shuffleAndDistribute");
 
 const resolvers = {
   Query: {
@@ -935,6 +939,40 @@ const resolvers = {
       } catch (error) {
         console.error(error);
         throw new Error("Failed to update game status");
+      }
+    },
+    distributeCards: async (parent, { tableId }, context) => {
+      try {
+        // Retrieve necessary information from the database or cache
+        const table = await Table.findByPk(tableId, { include: Player });
+        const numPlayers = table.players.length;
+        const dealerSeat = 1; /* logic to determine the dealerSeat */
+        const occupiedSeats = table.players.map((player) => player.seatNumber);
+
+        // Call the utility function to distribute cards
+        const deck = await createShuffledDeck(); // Make sure to implement createShuffledDeck
+        const handState = distributeCards(
+          numPlayers,
+          deck,
+          dealerSeat,
+          occupiedSeats
+        );
+
+        // Update seat numbers and player IDs in handState
+        handState.players.forEach((player, index) => {
+          player.seatNumber = occupiedSeats[index];
+          player.playerId = table.players[index].playerId;
+        });
+
+        // You may want to store the hand state in your database or cache for future reference
+
+        return {
+          message: "Cards distributed successfully!",
+          handState,
+        };
+      } catch (error) {
+        console.error("Error distributing cards:", error);
+        throw new Error("Failed to distribute cards");
       }
     },
     // This is just a test mutation that interacts with redis

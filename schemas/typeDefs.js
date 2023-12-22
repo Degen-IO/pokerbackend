@@ -76,6 +76,29 @@ const typeDefs = gql`
     status: GameStatus!
   }
 
+  type DistributeCardsResponse {
+    message: String!
+    handState: HandState
+  }
+
+  type HandState {
+    players: [PlayerHand]
+    burn1: Card
+    flop1: Card
+    flop2: Card
+    flop3: Card
+    burn2: Card
+    turn: Card
+    burn3: Card
+    river: Card
+  }
+
+  type PlayerHand {
+    playerId: ID
+    seatNumber: Int
+    holeCards: [Card]
+  }
+
   type Auth {
     token: ID!
     user: User
@@ -208,6 +231,8 @@ const typeDefs = gql`
       gameType: GameType!
       status: GameStatus!
     ): GameStatusUpdateResponse
+
+    distributeCards(tableId: ID!): DistributeCardsResponse
 
     postMessage(content: String!): String
     sendMessage(content: String!): Message
