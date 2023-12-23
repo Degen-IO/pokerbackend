@@ -960,9 +960,11 @@ const resolvers = {
         );
 
         // Update seat numbers and player IDs in handState
+        // Enhance PlayerHand with userId
         handState.players.forEach((player, index) => {
           player.seatNumber = occupiedSeats[index];
           player.playerId = table.players[index].playerId;
+          player.userId = table.players[index].userId;
         });
 
         // You may want to store the hand state in your database or cache for future reference

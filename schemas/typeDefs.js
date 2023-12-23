@@ -96,6 +96,7 @@ const typeDefs = gql`
 
   type PlayerHand {
     playerId: ID
+    userId: ID
     seatNumber: Int
     holeCards: [Card]
   }
