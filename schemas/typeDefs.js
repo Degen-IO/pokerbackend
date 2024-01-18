@@ -77,6 +77,12 @@ const typeDefs = gql`
     status: GameStatus!
   }
 
+  type GameUpdatePayload {
+    gameId: ID!
+    userId: ID!
+    message: String!
+  }
+
   type DistributeCardsResponse {
     message: String!
     handState: HandState
@@ -170,6 +176,10 @@ const typeDefs = gql`
     SPADES
   }
 
+  type Message {
+    content: String!
+  }
+
   type Query {
     users: [User]!
     user(userId: ID!): User
@@ -236,16 +246,12 @@ const typeDefs = gql`
 
     distributeCards(tableId: ID!): DistributeCardsResponse
 
-    postMessage(content: String!): String
     sendMessage(content: String!): Message
   }
 
   type Subscription {
     newMessage: String
-  }
-
-  type Message {
-    content: String!
+    watchGame(gameId: ID!): String
   }
 `;
 

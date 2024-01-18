@@ -1,6 +1,7 @@
 const { GraphQLError } = require("graphql");
 const { Op } = require("sequelize");
-const { pubsub } = require("../config/redis");
+const { pubsub, redisSubscriber, redisPublisher } = require("../config/redis");
+const { withFilter } = require("graphql-subscriptions");
 
 const bcrypt = require("bcryptjs");
 const {
@@ -26,6 +27,7 @@ const {
   createShuffledDeck,
   distributeCards,
 } = require("../utils/shuffleAndDistribute");
+const { publishMessage } = require("../redis/publishers");
 
 const resolvers = {
   Query: {
@@ -614,6 +616,17 @@ const resolvers = {
           // Add any necessary attributes for the table
         });
 
+        // After creating the game, publish an update
+        const message = JSON.stringify({
+          type: "gameUpdate",
+          gameId: cashGame.gameId,
+          gameType: "cash", // or 'tournament'
+          status: cashGame.status,
+        });
+
+        //creates the game publisher(channel)
+        publishMessage(`game:${cashGame.gameId}`, message);
+
         return cashGame;
       } catch (error) {
         console.error("Error while creating CashGame:", error.message);
@@ -777,7 +790,7 @@ const resolvers = {
     joinGame: async (parent, { gameId, gameType }, context) => {
       // Check if the user is authenticated
       if (!context.authUserId) {
-        throw new AuthenticationError("You must be logged in to join a game");
+        throw new GraphQLError("You must be logged in to join a game");
       }
 
       try {
@@ -843,6 +856,32 @@ const resolvers = {
             seatNumber: seatNumber,
           });
 
+          // After creating the player, publish the game update
+          const message = JSON.stringify({
+            type: "gameUpdate",
+            gameId: game.gameId,
+            gameType: gameType,
+            status: game.status,
+            userId: context.authUserId, // Include the user ID in the payload
+          });
+
+          console.log(
+            `-----------------------Published game update to channel: game:${game.gameId}`
+          );
+          console.log(message);
+          publishMessage(`game:${game.gameId}`, message);
+
+          // // Manually trigger the watchGame subscription
+          // const watchGamePayload = {
+          //   watchGame: {
+          //     gameId: game.gameId,
+          //     userId: context.authUserId,
+          //     message: "Subscribed to game updates",
+          //   },
+          // };
+
+          // pubsub.publish(`game:${game.gameId}`, watchGamePayload);
+
           return newPlayer;
         } else {
           throw new Error("You cannot join this game");
@@ -855,7 +894,7 @@ const resolvers = {
     leaveGame: async (parent, { gameId, gameType }, context) => {
       // Check if the user is authenticated
       if (!context.authUserId) {
-        throw new AuthenticationError("You must be logged in to leave a game");
+        throw new GraphQLError("You must be logged in to leave a game");
       }
 
       try {
@@ -967,7 +1006,16 @@ const resolvers = {
           player.userId = table.players[index].userId;
         });
 
-        // You may want to store the hand state in your database or cache for future reference
+        // Publish the cards data to the game channel
+        await pubsub.publish(`game:${table.gameId}`, {
+          cardDistribution: {
+            type: "CARD_DISTRIBUTION",
+            data: {
+              message: "Cards distributed successfully!",
+              handState,
+            },
+          },
+        });
 
         return {
           message: "Cards distributed successfully!",
@@ -994,6 +1042,29 @@ const resolvers = {
     newMessage: {
       subscribe: () => pubsub.asyncIterator(["MESSAGE_POSTED"]), // This will subscribe to the message_posted channel (Need 2 Apollo instances to test)
     },
+    watchGame: {
+      subscribe: (gameId) => pubsub.asyncIterator([`game:${gameId}`]),
+    },
+    // watchGame: {
+    //   subscribe: withFilter(
+    //     () => {
+    //       console.log(
+    //         "----------------------Subscribed to GAME_UPDATE channel"
+    //       );
+    //       return pubsub.asyncIterator([`game:${gameId}`]);
+    //     },
+    //     async (payload, variables, context) => {
+    //       console.log(
+    //         `--------------------------------User ${context.authUserId} is watching Game ${variables.gameId}`
+    //       );
+    //       // Check if the user is subscribed to the specific game channel
+    //       return (
+    //         payload.watchGame.gameId === variables.gameId &&
+    //         payload.watchGame.userId === context.authUserId
+    //       );
+    //     }
+    //   ),
+    // },
   },
 };
 
