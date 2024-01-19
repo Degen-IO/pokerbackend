@@ -79,8 +79,8 @@ const typeDefs = gql`
 
   type GameUpdatePayload {
     gameId: ID!
-    userId: ID!
     message: String!
+    handState: HandState
   }
 
   type DistributeCardsResponse {
@@ -251,7 +251,7 @@ const typeDefs = gql`
 
   type Subscription {
     newMessage: String
-    watchGame(gameId: ID!): String
+    watchGame(gameId: ID!): GameUpdatePayload
   }
 `;
 

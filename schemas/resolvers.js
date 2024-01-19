@@ -1008,12 +1008,10 @@ const resolvers = {
 
         // Publish the cards data to the game channel
         await pubsub.publish(`game:${table.gameId}`, {
-          cardDistribution: {
-            type: "CARD_DISTRIBUTION",
-            data: {
-              message: "Cards distributed successfully!",
-              handState,
-            },
+          watchGame: {
+            gameId: table.gameId,
+            message: "Cards distributed successfully!",
+            handState,
           },
         });
 
@@ -1043,7 +1041,10 @@ const resolvers = {
       subscribe: () => pubsub.asyncIterator(["MESSAGE_POSTED"]), // This will subscribe to the message_posted channel (Need 2 Apollo instances to test)
     },
     watchGame: {
-      subscribe: (gameId) => pubsub.asyncIterator([`game:${gameId}`]),
+      subscribe: (parent, { gameId }) => {
+        console.log(`Client subscribed to game:${gameId}`);
+        return pubsub.asyncIterator([`game:${gameId}`]);
+      },
     },
     // watchGame: {
     //   subscribe: withFilter(
