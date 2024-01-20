@@ -1,11 +1,15 @@
 const { Table, Player } = require("../models");
 
 module.exports = {
-  findOrCreateTable: async function (game) {
+  findOrCreateTable: async function (game, gameType) {
+    // console.log("----------------------game: " + game);
+    // console.log("----------------------game.gameId: " + game.gameId);
+    // console.log("----------------------game.gameType: " + game.gameType);
     // Find all existing tables with available seats for the game
     const existingTables = await Table.findAll({
       where: {
         gameId: game.gameId,
+        gameType: gameType,
       },
       include: [Player], // Include players associated with each table
     });
@@ -22,6 +26,7 @@ module.exports = {
     // If no existing table with available seats, create a new table
     const newTable = await Table.create({
       gameId: game.gameId,
+      gameType: game.gameType,
     });
 
     // Fetch players separately for the new table (empty array)

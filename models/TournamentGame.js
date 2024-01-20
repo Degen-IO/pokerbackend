@@ -83,6 +83,8 @@ const getTournamentGameModel = (sequelize, { DataTypes }) => {
     TournamentGame.hasMany(models.PlayerAction, { foreignKey: "gameId" });
 
     TournamentGame.hasMany(models.BlindLevel, { foreignKey: "gameId" });
+
+    TournamentGame.hasMany(models.Table, { foreignKey: "gameId" });
   };
 
   return TournamentGame;

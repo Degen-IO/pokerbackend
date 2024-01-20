@@ -607,7 +607,7 @@ const resolvers = {
         // Create the initial table for the Cash Game
         await Table.create({
           gameId: cashGame.gameId,
-          // Add any necessary attributes for the table
+          gameType: "cash",
         });
 
         return cashGame;
@@ -699,7 +699,7 @@ const resolvers = {
       // Create the initial table for the Cash Game
       await Table.create({
         gameId: tournamentGame.gameId,
-        // Add any necessary attributes for the table
+        gameType: "tournament",
       });
 
       return tournamentGame;
@@ -811,6 +811,7 @@ const resolvers = {
             where: {
               userId: context.authUserId,
               gameId: game.gameId,
+              gameType: gameType,
             },
           });
 
@@ -819,7 +820,7 @@ const resolvers = {
           }
 
           // Find or create a table based on your criteria
-          let table = await findOrCreateTable(game);
+          let table = await findOrCreateTable(game, gameType);
 
           // Get the assigned seat numbers for the table
           const assignedSeatNumbers = table.players.map(
