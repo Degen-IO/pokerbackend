@@ -606,14 +606,13 @@ const resolvers = {
           blindsSmall: args.blindsSmall,
           blindsBig: args.blindsBig,
           duration: args.duration,
-          groupId: args.groupId, // Associate with the group
-          userId: context.authUserId, // Associate with the user
+          groupId: args.groupId,
+          userId: context.authUserId,
         });
 
         // Create the initial table for the Cash Game
         await Table.create({
           gameId: cashGame.gameId,
-          // Add any necessary attributes for the table
         });
 
         // After creating the game, publish an update
@@ -857,6 +856,7 @@ const resolvers = {
           });
 
           // After creating the player, publish the game update
+          //THIS WILL LIKELY BE CHANGED TO PUBSUB??
           const message = JSON.stringify({
             type: "gameUpdate",
             gameId: game.gameId,
@@ -870,17 +870,6 @@ const resolvers = {
           );
           console.log(message);
           publishMessage(`game:${game.gameId}`, message);
-
-          // // Manually trigger the watchGame subscription
-          // const watchGamePayload = {
-          //   watchGame: {
-          //     gameId: game.gameId,
-          //     userId: context.authUserId,
-          //     message: "Subscribed to game updates",
-          //   },
-          // };
-
-          // pubsub.publish(`game:${game.gameId}`, watchGamePayload);
 
           return newPlayer;
         } else {
@@ -986,7 +975,7 @@ const resolvers = {
         const table = await Table.findByPk(tableId, { include: Player });
         const numPlayers = table.players.length;
         // const dealerSeat = table.dealerSeat;
-        const dealerSeat = 1; /* logic to determine the dealerSeat */
+        const dealerSeat = 1; //**** Add logic to determine dealer seat
         const occupiedSeats = table.players.map((player) => player.seatNumber);
 
         // Call the utility function to distribute cards
@@ -1046,26 +1035,6 @@ const resolvers = {
         return pubsub.asyncIterator([`game:${gameId}`]);
       },
     },
-    // watchGame: {
-    //   subscribe: withFilter(
-    //     () => {
-    //       console.log(
-    //         "----------------------Subscribed to GAME_UPDATE channel"
-    //       );
-    //       return pubsub.asyncIterator([`game:${gameId}`]);
-    //     },
-    //     async (payload, variables, context) => {
-    //       console.log(
-    //         `--------------------------------User ${context.authUserId} is watching Game ${variables.gameId}`
-    //       );
-    //       // Check if the user is subscribed to the specific game channel
-    //       return (
-    //         payload.watchGame.gameId === variables.gameId &&
-    //         payload.watchGame.userId === context.authUserId
-    //       );
-    //     }
-    //   ),
-    // },
   },
 };
 
