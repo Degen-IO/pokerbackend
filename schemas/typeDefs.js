@@ -17,6 +17,14 @@ const typeDefs = gql`
     seatNumber: Int
   }
 
+  type Game {
+    gameId: ID!
+    gameType: GameType!
+    name: String!
+    status: GameStatus!
+    startDateTime: String!
+  }
+
   type Table {
     tableId: ID!
     gameId: ID!
@@ -149,6 +157,7 @@ const typeDefs = gql`
   type Query {
     users: [User]!
     user(userId: ID!): User
+    userGames(userId: ID!): [Game]!
     pokerGroups(userId: ID!): [PokerGroup]
     pendingMembers(groupId: ID!): [User]
     membersOfGroup(groupId: ID!): [User]

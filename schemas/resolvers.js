@@ -32,6 +32,56 @@ const resolvers = {
     user: async (parent, { userId }) => {
       return User.findByPk(userId);
     },
+    userGames: async (parent, { userId }, context) => {
+      // Check if the user is authorized to view games
+      //technically could view other user's games as long as theyre logged in, but we could alter this if needed
+      if (!context.authUserId) {
+        throw new GraphQLError(
+          "You must be logged in to view Cash Games in the group",
+          {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          }
+        );
+      }
+      try {
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+          throw new Error("User not found");
+        }
+
+        // Find all Player entries associated with the user
+        const playerEntries = await Player.findAll({
+          where: { userId },
+        });
+
+        // Extract gameIds and gameTypes from the playerEntries
+        const gameEntries = playerEntries.map(({ gameId, gameType }) => ({
+          gameId,
+          gameType,
+        }));
+
+        // Find all games (both cash and tournament) associated with the extracted gameEntries
+        const games = await Promise.all(
+          gameEntries.map(async ({ gameId, gameType }) => {
+            if (gameType === "cash") {
+              return CashGame.findByPk(gameId);
+            } else if (gameType === "tournament") {
+              return TournamentGame.findByPk(gameId);
+            }
+            return null;
+          })
+        );
+
+        return games;
+      } catch (error) {
+        console.error("Error fetching user games:", error);
+        throw error;
+      }
+    },
+
     pokerGroups: async (parent, { userId }) => {
       // Fetch and return poker groups associated with the specified user ID
       try {
@@ -593,6 +643,7 @@ const resolvers = {
 
         const cashGame = await CashGame.create({
           name: args.name,
+          gameType: "cash",
           status: "waiting",
           startDateTime: args.startDateTime,
           playersPerTable: args.playersPerTable,
@@ -683,6 +734,7 @@ const resolvers = {
 
       const tournamentGame = await TournamentGame.create({
         name: args.name,
+        gameType: "tournament",
         status: "waiting",
         startDateTime: args.startDateTime,
         playersPerTable: args.playersPerTable,

@@ -6,6 +6,11 @@ const getCashGameModel = (sequelize, { DataTypes }) => {
       primaryKey: true,
       autoIncrement: true,
     },
+    gameType: {
+      type: DataTypes.ENUM("cash"),
+      allowNull: false,
+      defaultValue: "cash",
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
