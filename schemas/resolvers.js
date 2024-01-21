@@ -1,7 +1,6 @@
 const { GraphQLError } = require("graphql");
 const { Op } = require("sequelize");
 const { pubsub, redisSubscriber, redisPublisher } = require("../config/redis");
-const { withFilter } = require("graphql-subscriptions");
 
 const bcrypt = require("bcryptjs");
 const {
@@ -864,11 +863,7 @@ const resolvers = {
             status: game.status,
             userId: context.authUserId, // Include the user ID in the payload
           });
-
-          console.log(
-            `-----------------------Published game update to channel: game:${game.gameId}`
-          );
-          console.log(message);
+          
           publishMessage(`game:${game.gameId}`, message);
 
           return newPlayer;
