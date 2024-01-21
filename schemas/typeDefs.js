@@ -20,6 +20,7 @@ const typeDefs = gql`
   type Table {
     tableId: ID!
     gameId: ID!
+    dealerSeat: Int
   }
 
   type PokerGroup {
@@ -74,6 +75,36 @@ const typeDefs = gql`
     gameId: ID!
     gameType: GameType!
     status: GameStatus!
+  }
+
+  type GameUpdatePayload {
+    gameId: ID!
+    message: String!
+    handState: HandState
+  }
+
+  type DistributeCardsResponse {
+    message: String!
+    handState: HandState
+  }
+
+  type HandState {
+    players: [PlayerHand]
+    burn1: Card
+    flop1: Card
+    flop2: Card
+    flop3: Card
+    burn2: Card
+    turn: Card
+    burn3: Card
+    river: Card
+  }
+
+  type PlayerHand {
+    playerId: ID
+    userId: ID
+    seatNumber: Int
+    holeCards: [Card]
   }
 
   type Auth {
@@ -145,6 +176,10 @@ const typeDefs = gql`
     SPADES
   }
 
+  type Message {
+    content: String!
+  }
+
   type Query {
     users: [User]!
     user(userId: ID!): User
@@ -209,16 +244,14 @@ const typeDefs = gql`
       status: GameStatus!
     ): GameStatusUpdateResponse
 
-    postMessage(content: String!): String
+    distributeCards(tableId: ID!): DistributeCardsResponse
+
     sendMessage(content: String!): Message
   }
 
   type Subscription {
     newMessage: String
-  }
-
-  type Message {
-    content: String!
+    watchGame(gameId: ID!): GameUpdatePayload
   }
 `;
 
