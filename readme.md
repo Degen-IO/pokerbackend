@@ -31,6 +31,11 @@ To prepare the development environment, you need files containing sensitive info
    # PGAdmin (These will just be used for the container instance of pgadmin to interact with the containerized postgres instance)
    PGADMIN_DEFAULT_EMAIL=email@address.com
    PGADMIN_DEFAULT_PASSWORD=password
+
+   #Redis
+   REDIS_HOST=redis
+   REDIS_PORT=6379
+
    ```
 
    #### NOTE: Be sure to remove any additional whitespace or trailing comments from your values, Podman seems to want to include these in the variable names while Docker does not seem to mind their existance. This can cause unintended errors on initialization, such as trying to connect to _'db #comment here'_ or _'db '_ instead of 'db'. [See troubleshooting](#incorrect-database-configuration-provided-in-env)
