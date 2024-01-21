@@ -6,6 +6,11 @@ const getTournamentGameModel = (sequelize, { DataTypes }) => {
       primaryKey: true,
       autoIncrement: true,
     },
+    gameType: {
+      type: DataTypes.ENUM("tournament"),
+      allowNull: false,
+      defaultValue: "tournament",
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -83,6 +88,8 @@ const getTournamentGameModel = (sequelize, { DataTypes }) => {
     TournamentGame.hasMany(models.PlayerAction, { foreignKey: "gameId" });
 
     TournamentGame.hasMany(models.BlindLevel, { foreignKey: "gameId" });
+
+    TournamentGame.hasMany(models.Table, { foreignKey: "gameId" });
   };
 
   return TournamentGame;

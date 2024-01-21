@@ -37,6 +37,56 @@ const resolvers = {
     user: async (parent, { userId }) => {
       return User.findByPk(userId);
     },
+    userGames: async (parent, { userId }, context) => {
+      // Check if the user is authorized to view games
+      //technically could view other user's games as long as theyre logged in, but we could alter this if needed
+      if (!context.authUserId) {
+        throw new GraphQLError(
+          "You must be logged in to view Cash Games in the group",
+          {
+            extensions: {
+              code: "UNAUTHENTICATED",
+            },
+          }
+        );
+      }
+      try {
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+          throw new Error("User not found");
+        }
+
+        // Find all Player entries associated with the user
+        const playerEntries = await Player.findAll({
+          where: { userId },
+        });
+
+        // Extract gameIds and gameTypes from the playerEntries
+        const gameEntries = playerEntries.map(({ gameId, gameType }) => ({
+          gameId,
+          gameType,
+        }));
+
+        // Find all games (both cash and tournament) associated with the extracted gameEntries
+        const games = await Promise.all(
+          gameEntries.map(async ({ gameId, gameType }) => {
+            if (gameType === "cash") {
+              return CashGame.findByPk(gameId);
+            } else if (gameType === "tournament") {
+              return TournamentGame.findByPk(gameId);
+            }
+            return null;
+          })
+        );
+
+        return games;
+      } catch (error) {
+        console.error("Error fetching user games:", error);
+        throw error;
+      }
+    },
+
     pokerGroups: async (parent, { userId }) => {
       // Fetch and return poker groups associated with the specified user ID
       try {
@@ -598,6 +648,7 @@ const resolvers = {
 
         const cashGame = await CashGame.create({
           name: args.name,
+          gameType: "cash",
           status: "waiting",
           startDateTime: args.startDateTime,
           playersPerTable: args.playersPerTable,
@@ -612,18 +663,9 @@ const resolvers = {
         // Create the initial table for the Cash Game
         await Table.create({
           gameId: cashGame.gameId,
+          gameType: "cash",
+          // Add any necessary attributes for the table
         });
-
-        // After creating the game, publish an update
-        const message = JSON.stringify({
-          type: "gameUpdate",
-          gameId: cashGame.gameId,
-          gameType: "cash", // or 'tournament'
-          status: cashGame.status,
-        });
-
-        //creates the game publisher(channel)
-        publishMessage(`game:${cashGame.gameId}`, message);
 
         return cashGame;
       } catch (error) {
@@ -698,6 +740,7 @@ const resolvers = {
 
       const tournamentGame = await TournamentGame.create({
         name: args.name,
+        gameType: "tournament",
         status: "waiting",
         startDateTime: args.startDateTime,
         playersPerTable: args.playersPerTable,
@@ -714,7 +757,7 @@ const resolvers = {
       // Create the initial table for the Cash Game
       await Table.create({
         gameId: tournamentGame.gameId,
-        // Add any necessary attributes for the table
+        gameType: "tournament",
       });
 
       return tournamentGame;
@@ -826,6 +869,7 @@ const resolvers = {
             where: {
               userId: context.authUserId,
               gameId: game.gameId,
+              gameType: gameType,
             },
           });
 
@@ -834,7 +878,7 @@ const resolvers = {
           }
 
           // Find or create a table based on your criteria
-          let table = await findOrCreateTable(game);
+          let table = await findOrCreateTable(game, gameType);
 
           // Get the assigned seat numbers for the table
           const assignedSeatNumbers = table.players.map(
@@ -863,7 +907,7 @@ const resolvers = {
             status: game.status,
             userId: context.authUserId, // Include the user ID in the payload
           });
-          
+
           publishMessage(`game:${game.gameId}`, message);
 
           return newPlayer;

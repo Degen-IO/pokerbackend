@@ -11,6 +11,10 @@ const getTableModel = (sequelize, { DataTypes }) => {
       allowNull: false,
       defaultValue: false, // Initially set to false
     },
+    gameType: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     dealerSeat: {
       type: DataTypes.INTEGER,
       allowNull: true,
