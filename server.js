@@ -13,6 +13,7 @@ const { useServer } = require("graphql-ws/lib/use/ws");
 const cors = require("cors");
 const { authMiddleware } = require("./utils/auth");
 const { publishMessage } = require("./redis/publishers");
+require("./utils/scheduler");
 require("./redis/subscribers");
 const { pubsub, sessionStore } = require("./config/redis");
 const { typeDefs, resolvers } = require("./schemas");

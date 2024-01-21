@@ -38,8 +38,26 @@ const getCardModel = (sequelize, { DataTypes }) => {
     },
   });
 
-  Card.associate = (models) => {
-    Card.belongsTo(models.Deck);
+  // Add a method to get a shuffled deck
+  Card.getShuffledDeck = async () => {
+    try {
+      const cards = await Card.findAll(); // Get all cards from the database
+      if (!cards || cards.length === 0) {
+        throw new Error("No cards found in the database.");
+      }
+
+      // Shuffle the cards using the provided logic
+      //Fisher-Yates shuffle or the Knuth shuffle.
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
+
+      return cards;
+    } catch (error) {
+      console.error("Error getting shuffled deck:", error);
+      throw error;
+    }
   };
 
   return Card;

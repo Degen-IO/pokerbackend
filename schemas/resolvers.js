@@ -1,6 +1,6 @@
 const { GraphQLError } = require("graphql");
 const { Op } = require("sequelize");
-const { pubsub } = require("../config/redis");
+const { pubsub, redisSubscriber, redisPublisher } = require("../config/redis");
 
 const bcrypt = require("bcryptjs");
 const {
@@ -22,6 +22,11 @@ const { findOrCreateTable } = require("../utils/findOrCreateTable");
 const {
   hasLateRegistrationExpired,
 } = require("../utils/hasLateRegistrationExpired");
+const {
+  createShuffledDeck,
+  distributeCards,
+} = require("../utils/shuffleAndDistribute");
+const { publishMessage } = require("../redis/publishers");
 
 const resolvers = {
   Query: {
@@ -651,14 +656,15 @@ const resolvers = {
           blindsSmall: args.blindsSmall,
           blindsBig: args.blindsBig,
           duration: args.duration,
-          groupId: args.groupId, // Associate with the group
-          userId: context.authUserId, // Associate with the user
+          groupId: args.groupId,
+          userId: context.authUserId,
         });
 
         // Create the initial table for the Cash Game
         await Table.create({
           gameId: cashGame.gameId,
           gameType: "cash",
+          // Add any necessary attributes for the table
         });
 
         return cashGame;
@@ -825,7 +831,7 @@ const resolvers = {
     joinGame: async (parent, { gameId, gameType }, context) => {
       // Check if the user is authenticated
       if (!context.authUserId) {
-        throw new AuthenticationError("You must be logged in to join a game");
+        throw new GraphQLError("You must be logged in to join a game");
       }
 
       try {
@@ -892,6 +898,18 @@ const resolvers = {
             seatNumber: seatNumber,
           });
 
+          // After creating the player, publish the game update
+          //THIS WILL LIKELY BE CHANGED TO PUBSUB??
+          const message = JSON.stringify({
+            type: "gameUpdate",
+            gameId: game.gameId,
+            gameType: gameType,
+            status: game.status,
+            userId: context.authUserId, // Include the user ID in the payload
+          });
+
+          publishMessage(`game:${game.gameId}`, message);
+
           return newPlayer;
         } else {
           throw new Error("You cannot join this game");
@@ -904,7 +922,7 @@ const resolvers = {
     leaveGame: async (parent, { gameId, gameType }, context) => {
       // Check if the user is authenticated
       if (!context.authUserId) {
-        throw new AuthenticationError("You must be logged in to leave a game");
+        throw new GraphQLError("You must be logged in to leave a game");
       }
 
       try {
@@ -959,7 +977,8 @@ const resolvers = {
         throw new Error("Error leaving the game");
       }
     },
-    updateGameStatus: async (_, { gameId, gameType, status }, context) => {
+    updateGameStatus: async (parent, { gameId, gameType, status }, context) => {
+      console.log("WHATSCUMINTHRU:...", gameId);
       try {
         let game;
 
@@ -989,6 +1008,50 @@ const resolvers = {
         throw new Error("Failed to update game status");
       }
     },
+    distributeCards: async (parent, { tableId }, context) => {
+      try {
+        // Retrieve necessary information from the database or cache
+        const table = await Table.findByPk(tableId, { include: Player });
+        const numPlayers = table.players.length;
+        // const dealerSeat = table.dealerSeat;
+        const dealerSeat = 1; //**** Add logic to determine dealer seat
+        const occupiedSeats = table.players.map((player) => player.seatNumber);
+
+        // Call the utility function to distribute cards
+        const deck = await createShuffledDeck(); // Make sure to implement createShuffledDeck
+        const handState = distributeCards(
+          numPlayers,
+          deck,
+          dealerSeat,
+          occupiedSeats
+        );
+
+        // Update seat numbers and player IDs in handState
+        // Enhance PlayerHand with userId
+        handState.players.forEach((player, index) => {
+          player.seatNumber = occupiedSeats[index];
+          player.playerId = table.players[index].playerId;
+          player.userId = table.players[index].userId;
+        });
+
+        // Publish the cards data to the game channel
+        await pubsub.publish(`game:${table.gameId}`, {
+          watchGame: {
+            gameId: table.gameId,
+            message: "Cards distributed successfully!",
+            handState,
+          },
+        });
+
+        return {
+          message: "Cards distributed successfully!",
+          handState,
+        };
+      } catch (error) {
+        console.error("Error distributing cards:", error);
+        throw new Error("Failed to distribute cards");
+      }
+    },
     // This is just a test mutation that interacts with redis
     sendMessage: async (_, { content }) => {
       try {
@@ -1004,6 +1067,12 @@ const resolvers = {
   Subscription: {
     newMessage: {
       subscribe: () => pubsub.asyncIterator(["MESSAGE_POSTED"]), // This will subscribe to the message_posted channel (Need 2 Apollo instances to test)
+    },
+    watchGame: {
+      subscribe: (parent, { gameId }) => {
+        console.log(`Client subscribed to game:${gameId}`);
+        return pubsub.asyncIterator([`game:${gameId}`]);
+      },
     },
   },
 };

@@ -15,6 +15,10 @@ const getTableModel = (sequelize, { DataTypes }) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    dealerSeat: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
   });
 
   Table.associate = (models) => {
