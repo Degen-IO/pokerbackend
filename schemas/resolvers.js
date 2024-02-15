@@ -978,7 +978,6 @@ const resolvers = {
       }
     },
     updateGameStatus: async (parent, { gameId, gameType, status }, context) => {
-      console.log("WHATSCUMINTHRU:...", gameId);
       try {
         let game;
 
