@@ -86,7 +86,15 @@ const resolvers = {
         throw error;
       }
     },
-
+    game: async (parent, { gameId, gameType }) => {
+      if (gameType === "tournament") {
+        return TournamentGame.findByPk(gameId);
+      } else if (gameType === "cash") {
+        return CashGame.findByPk(gameId);
+      } else {
+        throw new Error("Invalid game type");
+      }
+    },
     pokerGroups: async (parent, { userId }) => {
       // Fetch and return poker groups associated with the specified user ID
       try {
