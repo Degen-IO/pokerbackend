@@ -204,6 +204,7 @@ const typeDefs = gql`
     user(userId: ID!): User
     userGames(userId: ID!): [Game]!
     game(gameId: ID!, gameType: String!): Game
+    playersInGame(gameId: ID!, gameType: String!): [Player]
     pokerGroups(userId: ID!): [PokerGroup]
     pendingMembers(groupId: ID!): [User]
     membersOfGroup(groupId: ID!): [User]

@@ -95,6 +95,29 @@ const resolvers = {
         throw new Error("Invalid game type");
       }
     },
+    playersInGame: async (parent, { gameId, gameType }) => {
+      if (gameType === "tournament") {
+        return Player.findAll({
+          include: [
+            {
+              model: TournamentGame,
+              where: { gameId: gameId },
+            },
+          ],
+        });
+      } else if (gameType === "cash") {
+        return Player.findAll({
+          include: [
+            {
+              model: CashGame,
+              where: { gameId: gameId },
+            },
+          ],
+        });
+      } else {
+        throw new Error("Invalid game type");
+      }
+    },
     pokerGroups: async (parent, { userId }) => {
       // Fetch and return poker groups associated with the specified user ID
       try {
