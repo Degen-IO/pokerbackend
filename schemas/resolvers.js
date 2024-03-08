@@ -659,13 +659,11 @@ const resolvers = {
           groupId: args.groupId,
           userId: context.authUserId,
         });
-        
 
         // Create the initial table for the Cash Game
         await Table.create({
-          gameId: cashGame.cashGameId,
+          cashGameId: cashGame.gameId,
           gameType: "cash",
-          // Add any necessary attributes for the table
         });
 
         return cashGame;
@@ -757,7 +755,7 @@ const resolvers = {
 
       // Create the initial table for the Cash Game
       await Table.create({
-        gameId: tournamentGame.tournamentGameId,
+        tournamentGameId: tournamentGame.gameId,
         gameType: "tournament",
       });
 
