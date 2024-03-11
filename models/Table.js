@@ -11,23 +11,29 @@ const getTableModel = (sequelize, { DataTypes }) => {
       allowNull: false,
       defaultValue: false, // Initially set to false
     },
-    gameType: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     dealerSeat: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+
+    // Add polymorphic association fields
+    gameableId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    gameableType: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   });
 
+  // Remove the direct belongsTo associations to CashGame and TournamentGame
+  // since we're implementing polymorphic associations
   Table.associate = (models) => {
-    // A table belongs to a CashGame or TournamentGame
-    Table.belongsTo(models.CashGame, { foreignKey: "gameId" });
-    Table.belongsTo(models.TournamentGame, { foreignKey: "gameId" });
-
     // A table can have multiple players
     Table.hasMany(models.Player, { foreignKey: "tableId" });
+
+    // Dynamic associations based on `gameableType` will be handled in the application logic
   };
 
   return Table;

@@ -89,7 +89,14 @@ const getTournamentGameModel = (sequelize, { DataTypes }) => {
 
     TournamentGame.hasMany(models.BlindLevel, { foreignKey: "gameId" });
 
-    TournamentGame.hasMany(models.Table, { foreignKey: "gameId" });
+    TournamentGame.hasMany(models.Table, {
+      foreignKey: "gameableId",
+      constraints: false,
+      scope: {
+        gameableType: "tournamentGame",
+      },
+      as: "Tables", // Optional: Defines the alias for the association
+    });
   };
 
   return TournamentGame;

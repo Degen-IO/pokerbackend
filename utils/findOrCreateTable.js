@@ -2,14 +2,14 @@ const { Table, Player } = require("../models");
 
 module.exports = {
   findOrCreateTable: async function (game, gameType) {
-    // console.log("----------------------game: " + game);
-    // console.log("----------------------game.gameId: " + game.gameId);
-    // console.log("----------------------game.gameType: " + game.gameType);
+    // Determine the correct gameableType based on gameType
+    const gameableType = gameType === "cash" ? "cashGame" : "tournamentGame";
+
     // Find all existing tables with available seats for the game
     const existingTables = await Table.findAll({
       where: {
-        gameId: game.gameId,
-        gameType: gameType,
+        gameableId: game.gameId, // Use the polymorphic field
+        gameableType, // Use the determined gameableType
       },
       include: [Player], // Include players associated with each table
     });
@@ -25,11 +25,14 @@ module.exports = {
 
     // If no existing table with available seats, create a new table
     const newTable = await Table.create({
-      gameId: game.gameId,
-      gameType: game.gameType,
+      gameableId: game.gameId, // Use the polymorphic field
+      gameableType, // Use the determined gameableType
+      // Ensure you set other necessary attributes for a new table, if any
     });
 
     // Fetch players separately for the new table (empty array)
+    // Note: This step might be unnecessary if the table has just been created
+    // and therefore has no players associated with it yet.
     const newTablePlayers = await Player.findAll({
       where: {
         tableId: newTable.tableId,
@@ -37,6 +40,8 @@ module.exports = {
     });
 
     // Attach players to the new table
+    // Note: Since the table is new, this will always be an empty array,
+    // but it's here to show how you might populate the players if needed.
     newTable.players = newTablePlayers;
 
     return newTable;

@@ -660,10 +660,14 @@ const resolvers = {
           userId: context.authUserId,
         });
 
+        if (!cashGame || !cashGame.gameId) {
+          throw new Error("Failed to create the tournament game.");
+        }
+
         // Create the initial table for the Cash Game
         await Table.create({
-          gameId: cashGame.gameId,
-          gameType: "cash",
+          gameableId: cashGame.gameId, // Polymorphic field for game ID
+          gameableType: "cashGame",
           // Add any necessary attributes for the table
         });
 
@@ -754,10 +758,14 @@ const resolvers = {
         userId: context.authUserId, // Associate with the user
       });
 
+      if (!tournamentGame || !tournamentGame.gameId) {
+        throw new Error("Failed to create the tournament game.");
+      }
+
       // Create the initial table for the Cash Game
-      await Table.create({
-        gameId: tournamentGame.gameId,
-        gameType: "tournament",
+      const table = await Table.create({
+        gameableId: tournamentGame.gameId, // Polymorphic field for game ID
+        gameableType: "tournamentGame",
       });
 
       return tournamentGame;
