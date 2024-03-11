@@ -660,12 +660,12 @@ const resolvers = {
           userId: context.authUserId,
         });
 
-        // Create the initial table for the Cash Game
-        await Table.create({
-          gameId: cashGame.gameId,
-          gameType: "cash",
-          // Add any necessary attributes for the table
-        });
+        // // Create the initial table for the Cash Game
+        // await Table.create({
+        //   gameId: cashGame.gameId,
+        //   gameType: "cash",
+        //   // Add any necessary attributes for the table
+        // });
 
         return cashGame;
       } catch (error) {
@@ -754,11 +754,11 @@ const resolvers = {
         userId: context.authUserId, // Associate with the user
       });
 
-      // Create the initial table for the Cash Game
-      await Table.create({
-        gameId: tournamentGame.gameId,
-        gameType: "tournament",
-      });
+      // // Create the initial table for the Cash Game
+      // await Table.create({
+      //   gameId: tournamentGame.gameId,
+      //   gameType: "tournament",
+      // });
 
       return tournamentGame;
     },
@@ -945,6 +945,7 @@ const resolvers = {
         const playerToRemove = await Player.findOne({
           where: {
             userId: context.authUserId,
+            gameType: gameType,
             gameId: game.gameId,
           },
         });
