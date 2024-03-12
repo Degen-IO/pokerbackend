@@ -23,6 +23,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
   let authToken4;
   let authToken5;
   let cashGameId;
+  let tournamentGameId;
   //use to check if Player and Table are destroyed correctly
   let user5PlayerId;
   let user5TableId;
@@ -102,6 +103,53 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
 
     // Assign the cash game ID to the variable
     cashGameId = createCashGameResponse.body.data.createCashGame.gameId;
+
+    const createTournamentGameQuery = `
+  mutation CreateTournamentGame($groupId: ID!, $name: String!, $startDateTime: String!, $playersPerTable: Int!, $numberOfRebuys: Int!, $rebuyPeriod: RebuyPeriod!, $addOn: Boolean!, $startingChips: Float!, $gameSpeed: GameSpeed!, $lateRegistrationDuration: LateRegistrationDuration!) {
+  createTournamentGame(groupId: $groupId, name: $name, startDateTime: $startDateTime, playersPerTable: $playersPerTable, numberOfRebuys: $numberOfRebuys, rebuyPeriod: $rebuyPeriod, addOn: $addOn, startingChips: $startingChips, gameSpeed: $gameSpeed, lateRegistrationDuration: $lateRegistrationDuration) {
+    gameId
+    status
+    name
+  }
+}
+`;
+
+    const createTournamentGameVariables = {
+      groupId: "3",
+      name: "TournamentGameTest",
+      startDateTime: makeFutureDate(),
+      playersPerTable: 2,
+      startingChips: 10000,
+      numberOfRebuys: 1,
+      rebuyPeriod: "_30min",
+      addOn: true,
+      gameSpeed: "fast",
+      lateRegistrationDuration: "_60min",
+    };
+
+    const createTournamentGameResponse = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken2}`)
+      .send({
+        query: createTournamentGameQuery,
+        variables: createTournamentGameVariables,
+      });
+
+    // Check if the tournament game was created successfully
+    if (
+      createTournamentGameResponse.statusCode !== 200 ||
+      !createTournamentGameResponse.body.data.createTournamentGame
+    ) {
+      console.log(
+        "Error creating tournament game:",
+        createTournamentGameResponse.body
+      );
+      throw new Error("Failed to create the tournament game for testing.");
+    }
+
+    // Assign the tournament game ID to a variable
+    tournamentGameId =
+      createTournamentGameResponse.body.data.createTournamentGame.gameId;
   });
 
   afterAll(async () => {
@@ -142,11 +190,15 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const { joinGame } = joinGameResponse.body.data;
 
     expect(joinGame).toHaveProperty("playerId");
+    expect(joinGame.playerId).toBe("1");
     expect(joinGame).toHaveProperty("userId");
     expect(joinGame).toHaveProperty("gameId");
+    expect(joinGame.gameId).toBe("1");
     expect(joinGame).toHaveProperty("gameType");
     expect(joinGame).toHaveProperty("tableId");
+    expect(joinGame.tableId).toBe("1");
     expect(joinGame).toHaveProperty("seatNumber");
+    expect(joinGame.seatNumber).toBe(1);
 
     initialTableId = joinGame.tableId;
   });
@@ -235,6 +287,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
 
     // Additional assertions specific to this scenario
     expect(joinGame.seatNumber).toBe(1);
+    expect(joinGame.tableId).toBe("2");
     expect(joinGame.tableId).not.toEqual(initialTableId); // Ensure a new table is created
 
     tableTwoId = joinGame.tableId;
@@ -418,6 +471,46 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
       });
     const { joinGame } = joinGameResponse.body.data;
     expect(joinGame.tableId).toBe(initialTableId);
+    expect(joinGame.seatNumber).toBe(2);
+  });
+
+  it("allows User2 to join the tournament game", async () => {
+    // User1 joins the tournament game
+    const joinGameQuery = `
+      mutation JoinGame($gameId: ID!, $gameType: GameType!) {
+        joinGame(gameId: $gameId, gameType: $gameType) {
+          playerId
+          userId
+          gameId
+          gameType
+          tableId
+          seatNumber
+        }
+      }
+    `;
+
+    console.log("Tournament Game ID:", tournamentGameId);
+    const joinGameVariables = {
+      gameId: tournamentGameId,
+      gameType: "tournament",
+    };
+
+    const joinGameResponse = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken2}`)
+      .send({
+        query: joinGameQuery,
+        variables: joinGameVariables,
+      });
+
+    expect(joinGameResponse.statusCode).toBe(200);
+    expect(joinGameResponse.body).toHaveProperty("data");
+    expect(joinGameResponse.body.data).toHaveProperty("joinGame");
+    // Check if the returned data has the expected structure
+
+    const { joinGame } = joinGameResponse.body.data;
+    expect(joinGame.tableId).toBe("4");
+    expect(joinGame.seatNumber).toBe(1);
   });
 
   it("changes the status of a game to 'finished'", async () => {
