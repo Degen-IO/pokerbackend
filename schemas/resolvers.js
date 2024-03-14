@@ -954,6 +954,16 @@ const resolvers = {
           throw new Error("Player not found in the game");
         }
 
+        // Get the player's data before removing them
+        const playerData = {
+          playerId: playerToRemove.playerId,
+          userId: playerToRemove.userId,
+          gameId: playerToRemove.gameId,
+          gameType: playerToRemove.gameType,
+          tableId: playerToRemove.tableId,
+          seatNumber: playerToRemove.seatNumber,
+        };
+
         // Remove the player from the game
         await playerToRemove.destroy();
 
@@ -972,7 +982,7 @@ const resolvers = {
           }
         }
 
-        return "Successfully left the game";
+        return playerData;
       } catch (error) {
         console.error("Error while leaving the game:", error.message);
         throw new Error("Error leaving the game");

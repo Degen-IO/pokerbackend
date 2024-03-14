@@ -140,10 +140,6 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
       createTournamentGameResponse.statusCode !== 200 ||
       !createTournamentGameResponse.body.data.createTournamentGame
     ) {
-      console.log(
-        "Error creating tournament game:",
-        createTournamentGameResponse.body
-      );
       throw new Error("Failed to create the tournament game for testing.");
     }
 
@@ -387,10 +383,17 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
 
   it("allows User5 to leave the cash game, destroying associated Player and table", async () => {
     const leaveGameQuery = `
-      mutation LeaveGame($gameId: ID!, $gameType: GameType!) {
-        leaveGame(gameId: $gameId, gameType: $gameType)
+    mutation LeaveGame($gameId: ID!, $gameType: GameType!) {
+      leaveGame(gameId: $gameId, gameType: $gameType) {
+        playerId
+        userId
+        gameId
+        gameType
+        tableId
+        seatNumber
       }
-    `;
+    }
+  `;
 
     const leaveGameVariables = {
       gameId: cashGameId,
@@ -410,12 +413,17 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     expect(leaveGameResponse.body.data).toHaveProperty("leaveGame");
 
     const { leaveGame } = leaveGameResponse.body.data;
-    expect(leaveGame).toBe("Successfully left the game");
+    expect(leaveGame.playerId).toBe("5");
+    expect(leaveGame.userId).toBe("5");
+    expect(leaveGame.gameId).toBe("1");
+    expect(leaveGame.gameType).toBe("cash");
+    expect(leaveGame.tableId).toBe("3");
+    expect(leaveGame.seatNumber).toBe(1);
 
     // Check for the existance of User5Player and user5Table. They should be null
-    if (user5PlayerId && user5TableId) {
-      const playerInstance = await Player.findByPk(user5PlayerId);
-      const tableInstance = await Table.findByPk(user5TableId);
+    if (leaveGame.playerId && leaveGame.tableId) {
+      const playerInstance = await Player.findByPk(leaveGame.playerId);
+      const tableInstance = await Table.findByPk(leaveGame.tableId);
 
       expect(playerInstance).toBeNull();
       expect(tableInstance).toBeNull();
@@ -425,10 +433,17 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
   it("allows User2 to leave the cash game and User5 to join, getting an empty seat at initial table", async () => {
     //User2 leaves game
     const leaveGameQuery = `
-      mutation LeaveGame($gameId: ID!, $gameType: GameType!) {
-        leaveGame(gameId: $gameId, gameType: $gameType)
+    mutation LeaveGame($gameId: ID!, $gameType: GameType!) {
+      leaveGame(gameId: $gameId, gameType: $gameType) {
+        playerId
+        userId
+        gameId
+        gameType
+        tableId
+        seatNumber
       }
-    `;
+    }
+  `;
 
     const leaveGameVariables = {
       gameId: cashGameId,
@@ -489,7 +504,6 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
       }
     `;
 
-    console.log("Tournament Game ID:", tournamentGameId);
     const joinGameVariables = {
       gameId: tournamentGameId,
       gameType: "tournament",
@@ -511,6 +525,128 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const { joinGame } = joinGameResponse.body.data;
     expect(joinGame.tableId).toBe("4");
     expect(joinGame.seatNumber).toBe(1);
+  });
+  it("allows User1 to join the tournament game", async () => {
+    // User1 joins the tournament game
+    const joinGameQuery = `
+      mutation JoinGame($gameId: ID!, $gameType: GameType!) {
+        joinGame(gameId: $gameId, gameType: $gameType) {
+          playerId
+          userId
+          gameId
+          gameType
+          tableId
+          seatNumber
+        }
+      }
+    `;
+
+    const joinGameVariables = {
+      gameId: tournamentGameId,
+      gameType: "tournament",
+    };
+
+    const joinGameResponse = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken1}`)
+      .send({
+        query: joinGameQuery,
+        variables: joinGameVariables,
+      });
+
+    expect(joinGameResponse.statusCode).toBe(200);
+    expect(joinGameResponse.body).toHaveProperty("data");
+    expect(joinGameResponse.body.data).toHaveProperty("joinGame");
+    // Check if the returned data has the expected structure
+
+    const { joinGame } = joinGameResponse.body.data;
+    expect(joinGame.tableId).toBe("4");
+    expect(joinGame.seatNumber).toBe(2);
+  });
+  it("allows User3 to join the tournament game", async () => {
+    // User1 joins the tournament game
+    const joinGameQuery = `
+      mutation JoinGame($gameId: ID!, $gameType: GameType!) {
+        joinGame(gameId: $gameId, gameType: $gameType) {
+          playerId
+          userId
+          gameId
+          gameType
+          tableId
+          seatNumber
+        }
+      }
+    `;
+
+    const joinGameVariables = {
+      gameId: tournamentGameId,
+      gameType: "tournament",
+    };
+
+    const joinGameResponse = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken3}`)
+      .send({
+        query: joinGameQuery,
+        variables: joinGameVariables,
+      });
+
+    expect(joinGameResponse.statusCode).toBe(200);
+    expect(joinGameResponse.body).toHaveProperty("data");
+    expect(joinGameResponse.body.data).toHaveProperty("joinGame");
+    // Check if the returned data has the expected structure
+
+    const { joinGame } = joinGameResponse.body.data;
+    expect(joinGame.tableId).toBe("5");
+    expect(joinGame.seatNumber).toBe(1);
+  });
+  it("allows User3 to leave the tournament game, and checks that they are still a part of the cash game", async () => {
+    const leaveGameQuery = `
+      mutation LeaveGame($gameId: ID!, $gameType: GameType!) {
+        leaveGame(gameId: $gameId, gameType: $gameType) {
+          playerId
+          userId
+          gameId
+          gameType
+          tableId
+          seatNumber
+        }
+      }
+    `;
+
+    const leaveGameVariables = {
+      gameId: tournamentGameId,
+      gameType: "tournament",
+    };
+
+    const leaveGameResponse = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken3}`)
+      .send({
+        query: leaveGameQuery,
+        variables: leaveGameVariables,
+      });
+    expect(leaveGameResponse.statusCode).toBe(200);
+    expect(leaveGameResponse.body).toHaveProperty("data");
+    expect(leaveGameResponse.body.data).toHaveProperty("leaveGame");
+
+    const { leaveGame } = leaveGameResponse.body.data;
+    expect(leaveGame.playerId).toBe("9");
+    expect(leaveGame.gameId).toBe("1");
+    expect(leaveGame.gameType).toBe("tournament");
+
+    // Check for the existance of Player9 and user3. They should be null
+    if (leaveGame.playerId && leaveGame.tableId) {
+      const playerInstance = await Player.findByPk(leaveGame.playerId);
+      const tableInstance = await Table.findByPk(leaveGame.tableId);
+
+      expect(playerInstance).toBeNull();
+      expect(tableInstance).toBeNull();
+    }
+
+    //Check that User3 is still a Player in the cash game
+    const playerInstance = await Player.findByPk("3");
+    expect(playerInstance).not.toBeNull();
   });
 
   it("changes the status of a game to 'finished'", async () => {

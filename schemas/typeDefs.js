@@ -246,7 +246,7 @@ const typeDefs = gql`
 
     joinGame(gameId: ID!, gameType: GameType!): Player
 
-    leaveGame(gameId: ID!, gameType: GameType!): String
+    leaveGame(gameId: ID!, gameType: GameType!): Player
 
     updateGameStatus(
       gameId: ID!
