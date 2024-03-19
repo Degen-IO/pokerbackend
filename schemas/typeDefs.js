@@ -11,7 +11,8 @@ const typeDefs = gql`
   type Player {
     playerId: ID!
     userId: ID!
-    gameId: ID!
+    cashId: ID
+    tournamentId: ID
     gameType: String!
     tableId: ID!
     seatNumber: Int
@@ -27,7 +28,7 @@ const typeDefs = gql`
 
   type Table {
     tableId: ID!
-    gameId: ID!
+    # Need cash or tournament ID?
     gameType: String!
     dealerSeat: Int
   }
@@ -39,7 +40,7 @@ const typeDefs = gql`
   }
 
   type CashGame {
-    gameId: ID!
+    cashId: ID!
     name: String!
     status: GameStatus!
     startDateTime: String!
@@ -51,7 +52,7 @@ const typeDefs = gql`
   }
 
   type TournamentGame {
-    gameId: ID!
+    tournamentId: ID!
     name: String!
     status: GameStatus!
     startDateTime: String!

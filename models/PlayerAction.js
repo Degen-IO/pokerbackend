@@ -21,11 +21,11 @@ const getPlayerActionModel = (sequelize, { DataTypes }) => {
   PlayerAction.associate = (models) => {
     PlayerAction.belongsTo(models.User, { foreignKey: "userId" });
     PlayerAction.belongsTo(models.CashGame, {
-      foreignKey: "gameId",
+      foreignKey: "cashId",
       as: "cashGame",
     });
     PlayerAction.belongsTo(models.TournamentGame, {
-      foreignKey: "gameId",
+      foreignKey: "tournamentId",
       as: "tournamentGame",
     });
   };

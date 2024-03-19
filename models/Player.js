@@ -6,9 +6,13 @@ const getPlayerModel = (sequelize, { DataTypes }) => {
       primaryKey: true,
       autoIncrement: true,
     },
-    gameId: {
+    cashId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
+    },
+    tournamentId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
     },
     // Add a field to store the game type (e.g., "cash" or "tournament")
     gameType: {
@@ -27,9 +31,8 @@ const getPlayerModel = (sequelize, { DataTypes }) => {
     Player.belongsTo(models.Table, { foreignKey: "tableId" });
 
     // Player can be associated with either a CashGame or a TournamentGame
-    // Define the associations for CashGame and TournamentGame here
-    Player.belongsTo(models.CashGame, { foreignKey: "gameId" });
-    Player.belongsTo(models.TournamentGame, { foreignKey: "gameId" });
+    Player.belongsTo(models.CashGame, { foreignKey: "cashId" });
+    Player.belongsTo(models.TournamentGame, { foreignKey: "tournamentId" });
   };
 
   return Player;

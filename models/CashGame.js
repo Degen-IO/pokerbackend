@@ -1,6 +1,6 @@
 const getCashGameModel = (sequelize, { DataTypes }) => {
   const CashGame = sequelize.define("cashGame", {
-    gameId: {
+    cashId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,
@@ -79,11 +79,11 @@ const getCashGameModel = (sequelize, { DataTypes }) => {
 
     CashGame.belongsTo(models.PokerGroup, { foreignKey: "groupId" });
 
-    CashGame.hasMany(models.PlayerHand, { foreignKey: "gameId" });
+    CashGame.hasMany(models.PlayerHand, { foreignKey: "cashId" });
 
-    CashGame.hasMany(models.PlayerAction, { foreignKey: "gameId" });
+    CashGame.hasMany(models.PlayerAction, { foreignKey: "cashId" });
 
-    CashGame.hasMany(models.Table, { foreignKey: "gameId" });
+    CashGame.hasMany(models.Table, { foreignKey: "cashId" });
   };
 
   return CashGame;
