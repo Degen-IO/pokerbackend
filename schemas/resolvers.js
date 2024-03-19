@@ -814,7 +814,7 @@ const resolvers = {
       // Find and delete all associated tables of the game
       const tables = await Table.findAll({
         where: {
-          gameId: game.gameId,
+          [`${gameType}Id`]: game[`${gameType}Id`],
         },
       });
 
