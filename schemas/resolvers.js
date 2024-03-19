@@ -957,7 +957,7 @@ const resolvers = {
           where: {
             userId: context.authUserId,
             gameType: gameType,
-            gameId: game.gameId,
+            [`${gameType}Id`]: game[`${gameType}Id`],
           },
         });
 
@@ -969,7 +969,7 @@ const resolvers = {
         const playerData = {
           playerId: playerToRemove.playerId,
           userId: playerToRemove.userId,
-          gameId: playerToRemove.gameId,
+          [`${gameType}Id`]: playerToRemove[`${playerToRemove.gameType}Id`],
           gameType: playerToRemove.gameType,
           tableId: playerToRemove.tableId,
           seatNumber: playerToRemove.seatNumber,
