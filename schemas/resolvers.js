@@ -1058,7 +1058,7 @@ const resolvers = {
         // Publish the cards data to the game channel
         await pubsub.publish(`game:${table.gameId}`, {
           watchGame: {
-            gameId: table.gameId,
+            [`${table.gameType}Id`]: table[`${table.gameType}Id`],
             message: "Cards distributed successfully!",
             handState,
           },
