@@ -911,15 +911,15 @@ const resolvers = {
           //THIS WILL LIKELY BE CHANGED TO PUBSUB??
           //ADD THIS BACK LATER!!
 
-          // const message = JSON.stringify({
-          //   type: "gameUpdate",
-          //   gameId: game.gameId,
-          //   gameType: gameType,
-          //   status: game.status,
-          //   userId: context.authUserId, // Include the user ID in the payload
-          // });
+          const message = JSON.stringify({
+            type: "gameUpdate",
+            [`${gameType}Id`]: game[`${gameType}Id`],
+            gameType: gameType,
+            status: game.status,
+            userId: context.authUserId, // Include the user ID in the payload
+          });
 
-          // publishMessage(`game:${game.gameId}`, message);
+          publishMessage(`game:${game[`${gameType}Id`]}`, message);
 
           return newPlayer;
         } else {
