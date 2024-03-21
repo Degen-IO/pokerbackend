@@ -919,7 +919,7 @@ const resolvers = {
             userId: context.authUserId, // Include the user ID in the payload
           });
 
-          publishMessage(`game:${game[`${gameType}Id`]}`, message);
+          publishMessage(`${gameType}game:${game[`${gameType}Id`]}`, message);
 
           return newPlayer;
         } else {
@@ -1056,13 +1056,16 @@ const resolvers = {
         });
 
         // Publish the cards data to the game channel
-        await pubsub.publish(`game:${table.gameId}`, {
-          watchGame: {
-            [`${table.gameType}Id`]: table[`${table.gameType}Id`],
-            message: "Cards distributed successfully!",
-            handState,
-          },
-        });
+        await pubsub.publish(
+          `${table.gameType}game:${table[`${table.gameType}Id`]}`,
+          {
+            watchGame: {
+              [`${table.gameType}Id`]: table[`${table.gameType}Id`],
+              message: "Cards distributed successfully!",
+              handState,
+            },
+          }
+        );
 
         return {
           message: "Cards distributed successfully!",
@@ -1090,9 +1093,9 @@ const resolvers = {
       subscribe: () => pubsub.asyncIterator(["MESSAGE_POSTED"]), // This will subscribe to the message_posted channel (Need 2 Apollo instances to test)
     },
     watchGame: {
-      subscribe: (parent, { gameId }) => {
-        console.log(`Client subscribed to game:${gameId}`);
-        return pubsub.asyncIterator([`game:${gameId}`]);
+      subscribe: (parent, { gameId, gameType }) => {
+        console.log(`Client subscribed to ${gameType}game:${gameId}`);
+        return pubsub.asyncIterator([`${gameType}game:${gameId}`]);
       },
     },
   },

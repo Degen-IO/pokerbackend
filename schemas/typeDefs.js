@@ -88,7 +88,7 @@ const typeDefs = gql`
   }
 
   type GameUpdatePayload {
-    gameId: ID!
+    gameId: ID
     message: String!
     handState: HandState
   }
@@ -262,7 +262,7 @@ const typeDefs = gql`
 
   type Subscription {
     newMessage: String
-    watchGame(gameId: ID!): GameUpdatePayload
+    watchGame(gameId: ID!, gameType: GameType!): GameUpdatePayload
   }
 `;
 
