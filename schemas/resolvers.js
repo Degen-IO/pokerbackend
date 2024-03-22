@@ -853,8 +853,6 @@ const resolvers = {
           throw new Error("Game not found");
         }
 
-        console.log("--------(joinGame)Game: ", game);
-
         // Check game eligibility based on game type and status
         if (
           (gameType === "cash" && game.status !== "finished") ||
@@ -866,9 +864,6 @@ const resolvers = {
                   game.lateRegistrationDuration
                 ))))
         ) {
-          console.log(
-            "--------(joinGame)Game is eligible, looking for existing Player"
-          );
           // Check if the user has already registered for the game
           const existingPlayer = await Player.findOne({
             where: {
@@ -879,13 +874,11 @@ const resolvers = {
           });
 
           if (existingPlayer) {
-            console.log("You have already registered for this game");
             throw new Error("You have already registered for this game");
           }
 
           // Find or create a table based on your criteria
           let table = await findOrCreateTable(game, gameType);
-          console.log("--------(joinGame)Table: ", table);
 
           // Get the assigned seat numbers for the table
           const assignedSeatNumbers = table.players.map(
@@ -905,11 +898,9 @@ const resolvers = {
             tableId: table.tableId,
             seatNumber: seatNumber,
           });
-          console.log("--------(joinGame)New Player: ", newPlayer);
 
           // After creating the player, publish the game update
           //THIS WILL LIKELY BE CHANGED TO PUBSUB??
-          //ADD THIS BACK LATER!!
 
           const message = JSON.stringify({
             type: "gameUpdate",
