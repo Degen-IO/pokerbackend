@@ -44,7 +44,7 @@ const getBlindLevelModel = (sequelize, { DataTypes }) => {
 
   BlindLevel.associate = (models) => {
     // Associate with TournamentGame
-    BlindLevel.belongsTo(models.TournamentGame, { foreignKey: "gameId" });
+    BlindLevel.belongsTo(models.TournamentGame, { foreignKey: "tournamentId" });
   };
 
   return BlindLevel;

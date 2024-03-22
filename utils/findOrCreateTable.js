@@ -8,7 +8,7 @@ module.exports = {
     // Find all existing tables with available seats for the game
     const existingTables = await Table.findAll({
       where: {
-        gameId: game.gameId,
+        [`${gameType}Id`]: game[`${gameType}Id`],
         gameType: gameType,
       },
       include: [Player], // Include players associated with each table
@@ -25,7 +25,7 @@ module.exports = {
 
     // If no existing table with available seats, create a new table
     const newTable = await Table.create({
-      gameId: game.gameId,
+      [`${gameType}Id`]: game[`${gameType}Id`],
       gameType: game.gameType,
     });
 

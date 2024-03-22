@@ -387,7 +387,7 @@ describe("PokerGroup CRUD Operations", () => {
               blindsBig
               blindsSmall
               duration
-              gameId
+              cashId
               name
               playersPerTable
               startingChips
@@ -424,7 +424,7 @@ describe("PokerGroup CRUD Operations", () => {
               blindsBig
               blindsSmall
               duration
-              gameId
+              cashId
               name
               playersPerTable
               startingChips
@@ -463,7 +463,7 @@ describe("PokerGroup CRUD Operations", () => {
               blindsBig
               blindsSmall
               duration
-              gameId
+              cashId
               name
               playersPerTable
               startingChips
@@ -502,7 +502,7 @@ describe("PokerGroup CRUD Operations", () => {
               blindsBig
               blindsSmall
               duration
-              gameId
+              cashId
               name
               playersPerTable
               startingChips
@@ -539,7 +539,7 @@ describe("PokerGroup CRUD Operations", () => {
               blindsBig
               blindsSmall
               duration
-              gameId
+              cashId
               name
               playersPerTable
               startingChips
@@ -578,7 +578,7 @@ describe("PokerGroup CRUD Operations", () => {
               blindsBig
               blindsSmall
               duration
-              gameId
+              cashId
               name
               playersPerTable
               startingChips
@@ -617,7 +617,7 @@ describe("PokerGroup CRUD Operations", () => {
               blindsBig
               blindsSmall
               duration
-              gameId
+              cashId
               name
               playersPerTable
               startingChips
@@ -657,7 +657,7 @@ describe("PokerGroup CRUD Operations", () => {
           blindsBig
           blindsSmall
           duration
-          gameId
+          cashId
           name
           playersPerTable
           startDateTime
@@ -690,7 +690,7 @@ describe("PokerGroup CRUD Operations", () => {
           blindsBig
           blindsSmall
           duration
-          gameId
+          cashId
           name
           playersPerTable
           startDateTime
@@ -720,7 +720,7 @@ describe("PokerGroup CRUD Operations", () => {
     mutation CreateTournamentGame($playersPerTable: Int!, $numberOfRebuys: Int!, $rebuyPeriod: RebuyPeriod!, $addOn: Boolean!, $startingChips: Float!, $gameSpeed: GameSpeed!, $lateRegistrationDuration: LateRegistrationDuration!, $startDateTime: String!, $name: String!, $groupId: ID!) {
         createTournamentGame(playersPerTable: $playersPerTable, numberOfRebuys: $numberOfRebuys, rebuyPeriod: $rebuyPeriod, addOn: $addOn, startingChips: $startingChips, gameSpeed: $gameSpeed, lateRegistrationDuration: $lateRegistrationDuration, startDateTime: $startDateTime, name: $name, groupId: $groupId) {
           addOn
-          gameId
+          tournamentId
           gameSpeed
           lateRegistrationDuration
           name
@@ -761,7 +761,7 @@ describe("PokerGroup CRUD Operations", () => {
     mutation CreateTournamentGame($playersPerTable: Int!, $numberOfRebuys: Int!, $rebuyPeriod: RebuyPeriod!, $addOn: Boolean!, $startingChips: Float!, $gameSpeed: GameSpeed!, $lateRegistrationDuration: LateRegistrationDuration!, $startDateTime: String!, $name: String!, $groupId: ID!) {
         createTournamentGame(playersPerTable: $playersPerTable, numberOfRebuys: $numberOfRebuys, rebuyPeriod: $rebuyPeriod, addOn: $addOn, startingChips: $startingChips, gameSpeed: $gameSpeed, lateRegistrationDuration: $lateRegistrationDuration, startDateTime: $startDateTime, name: $name, groupId: $groupId) {
           addOn
-          gameId
+          tournamentId
           gameSpeed
           lateRegistrationDuration
           name
@@ -802,7 +802,7 @@ describe("PokerGroup CRUD Operations", () => {
     mutation CreateTournamentGame($playersPerTable: Int!, $numberOfRebuys: Int!, $rebuyPeriod: RebuyPeriod!, $addOn: Boolean!, $startingChips: Float!, $gameSpeed: GameSpeed!, $lateRegistrationDuration: LateRegistrationDuration!, $startDateTime: String!, $name: String!, $groupId: ID!) {
         createTournamentGame(playersPerTable: $playersPerTable, numberOfRebuys: $numberOfRebuys, rebuyPeriod: $rebuyPeriod, addOn: $addOn, startingChips: $startingChips, gameSpeed: $gameSpeed, lateRegistrationDuration: $lateRegistrationDuration, startDateTime: $startDateTime, name: $name, groupId: $groupId) {
           addOn
-          gameId
+          tournamentId
           gameSpeed
           lateRegistrationDuration
           name
@@ -845,7 +845,7 @@ describe("PokerGroup CRUD Operations", () => {
         mutation CreateTournamentGame($playersPerTable: Int!, $numberOfRebuys: Int!, $rebuyPeriod: RebuyPeriod!, $addOn: Boolean!, $startingChips: Float!, $gameSpeed: GameSpeed!, $lateRegistrationDuration: LateRegistrationDuration!, $startDateTime: String!, $name: String!, $groupId: ID!) {
             createTournamentGame(playersPerTable: $playersPerTable, numberOfRebuys: $numberOfRebuys, rebuyPeriod: $rebuyPeriod, addOn: $addOn, startingChips: $startingChips, gameSpeed: $gameSpeed, lateRegistrationDuration: $lateRegistrationDuration, startDateTime: $startDateTime, name: $name, groupId: $groupId) {
             addOn
-            gameId
+            tournamentId
             gameSpeed
             lateRegistrationDuration
             name
@@ -889,7 +889,7 @@ describe("PokerGroup CRUD Operations", () => {
         mutation CreateTournamentGame($playersPerTable: Int!, $numberOfRebuys: Int!, $rebuyPeriod: RebuyPeriod!, $addOn: Boolean!, $startingChips: Float!, $gameSpeed: GameSpeed!, $lateRegistrationDuration: LateRegistrationDuration!, $startDateTime: String!, $name: String!, $groupId: ID!) {
             createTournamentGame(playersPerTable: $playersPerTable, numberOfRebuys: $numberOfRebuys, rebuyPeriod: $rebuyPeriod, addOn: $addOn, startingChips: $startingChips, gameSpeed: $gameSpeed, lateRegistrationDuration: $lateRegistrationDuration, startDateTime: $startDateTime, name: $name, groupId: $groupId) {
             addOn
-            gameId
+            tournamentId
             gameSpeed
             lateRegistrationDuration
             name
@@ -933,7 +933,7 @@ describe("PokerGroup CRUD Operations", () => {
         mutation CreateTournamentGame($playersPerTable: Int!, $numberOfRebuys: Int!, $rebuyPeriod: RebuyPeriod!, $addOn: Boolean!, $startingChips: Float!, $gameSpeed: GameSpeed!, $lateRegistrationDuration: LateRegistrationDuration!, $startDateTime: String!, $name: String!, $groupId: ID!) {
             createTournamentGame(playersPerTable: $playersPerTable, numberOfRebuys: $numberOfRebuys, rebuyPeriod: $rebuyPeriod, addOn: $addOn, startingChips: $startingChips, gameSpeed: $gameSpeed, lateRegistrationDuration: $lateRegistrationDuration, startDateTime: $startDateTime, name: $name, groupId: $groupId) {
             addOn
-            gameId
+            tournamentId
             gameSpeed
             lateRegistrationDuration
             name
@@ -977,7 +977,7 @@ describe("PokerGroup CRUD Operations", () => {
         mutation CreateTournamentGame($playersPerTable: Int!, $numberOfRebuys: Int!, $rebuyPeriod: RebuyPeriod!, $addOn: Boolean!, $startingChips: Float!, $gameSpeed: GameSpeed!, $lateRegistrationDuration: LateRegistrationDuration!, $startDateTime: String!, $name: String!, $groupId: ID!) {
             createTournamentGame(playersPerTable: $playersPerTable, numberOfRebuys: $numberOfRebuys, rebuyPeriod: $rebuyPeriod, addOn: $addOn, startingChips: $startingChips, gameSpeed: $gameSpeed, lateRegistrationDuration: $lateRegistrationDuration, startDateTime: $startDateTime, name: $name, groupId: $groupId) {
             addOn
-            gameId
+            tournamentId
             gameSpeed
             lateRegistrationDuration
             name
@@ -1022,7 +1022,7 @@ describe("PokerGroup CRUD Operations", () => {
     query Query($groupId: ID!) {
         tournamentGamesInGroup(groupId: $groupId) {
           addOn
-          gameId
+          tournamentId
           gameSpeed
           lateRegistrationDuration
           numberOfRebuys
@@ -1057,7 +1057,7 @@ describe("PokerGroup CRUD Operations", () => {
     query Query($groupId: ID!) {
         tournamentGamesInGroup(groupId: $groupId) {
           addOn
-          gameId
+          tournamentId
           gameSpeed
           lateRegistrationDuration
           numberOfRebuys

@@ -23,6 +23,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
   let authToken4;
   let authToken5;
   let cashGameId;
+  let tournamentGameId;
   //use to check if Player and Table are destroyed correctly
   let user5PlayerId;
   let user5TableId;
@@ -66,7 +67,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const createCashGameQuery = `
       mutation CreateCashGame($groupId: ID!, $name: String!, $startDateTime: String!, $playersPerTable: Int!, $startingChips: Float!, $blindsSmall: Float!, $blindsBig: Float!, $duration: Duration!) {
         createCashGame(groupId: $groupId, name: $name, startDateTime: $startDateTime, playersPerTable: $playersPerTable, startingChips: $startingChips, blindsSmall: $blindsSmall, blindsBig: $blindsBig, duration: $duration) {
-          gameId
+          cashId
           status
           name
         }
@@ -101,7 +102,50 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     }
 
     // Assign the cash game ID to the variable
-    cashGameId = createCashGameResponse.body.data.createCashGame.gameId;
+    cashGameId = createCashGameResponse.body.data.createCashGame.cashId;
+
+    const createTournamentGameQuery = `
+  mutation CreateTournamentGame($groupId: ID!, $name: String!, $startDateTime: String!, $playersPerTable: Int!, $numberOfRebuys: Int!, $rebuyPeriod: RebuyPeriod!, $addOn: Boolean!, $startingChips: Float!, $gameSpeed: GameSpeed!, $lateRegistrationDuration: LateRegistrationDuration!) {
+  createTournamentGame(groupId: $groupId, name: $name, startDateTime: $startDateTime, playersPerTable: $playersPerTable, numberOfRebuys: $numberOfRebuys, rebuyPeriod: $rebuyPeriod, addOn: $addOn, startingChips: $startingChips, gameSpeed: $gameSpeed, lateRegistrationDuration: $lateRegistrationDuration) {
+    tournamentId
+    status
+    name
+  }
+}
+`;
+
+    const createTournamentGameVariables = {
+      groupId: "3",
+      name: "TournamentGameTest",
+      startDateTime: makeFutureDate(),
+      playersPerTable: 2,
+      startingChips: 10000,
+      numberOfRebuys: 1,
+      rebuyPeriod: "_30min",
+      addOn: true,
+      gameSpeed: "fast",
+      lateRegistrationDuration: "_60min",
+    };
+
+    const createTournamentGameResponse = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken2}`)
+      .send({
+        query: createTournamentGameQuery,
+        variables: createTournamentGameVariables,
+      });
+
+    // Check if the tournament game was created successfully
+    if (
+      createTournamentGameResponse.statusCode !== 200 ||
+      !createTournamentGameResponse.body.data.createTournamentGame
+    ) {
+      throw new Error("Failed to create the tournament game for testing.");
+    }
+
+    // Assign the tournament game ID to a variable
+    tournamentGameId =
+      createTournamentGameResponse.body.data.createTournamentGame.tournamentId;
   });
 
   afterAll(async () => {
@@ -113,7 +157,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber
@@ -142,11 +186,15 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const { joinGame } = joinGameResponse.body.data;
 
     expect(joinGame).toHaveProperty("playerId");
+    expect(joinGame.playerId).toBe("1");
     expect(joinGame).toHaveProperty("userId");
-    expect(joinGame).toHaveProperty("gameId");
+    expect(joinGame).toHaveProperty("cashId");
+    expect(joinGame.cashId).toBe("1");
     expect(joinGame).toHaveProperty("gameType");
     expect(joinGame).toHaveProperty("tableId");
+    expect(joinGame.tableId).toBe("1");
     expect(joinGame).toHaveProperty("seatNumber");
+    expect(joinGame.seatNumber).toBe(1);
 
     initialTableId = joinGame.tableId;
   });
@@ -157,7 +205,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber
@@ -185,7 +233,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const { joinGame } = joinGameResponse.body.data;
     expect(joinGame).toHaveProperty("playerId");
     expect(joinGame).toHaveProperty("userId");
-    expect(joinGame).toHaveProperty("gameId");
+    expect(joinGame).toHaveProperty("cashId");
     expect(joinGame).toHaveProperty("gameType");
     expect(joinGame).toHaveProperty("tableId");
     expect(joinGame).toHaveProperty("seatNumber");
@@ -200,7 +248,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber
@@ -228,13 +276,14 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const { joinGame } = joinGameResponse.body.data;
     expect(joinGame).toHaveProperty("playerId");
     expect(joinGame).toHaveProperty("userId");
-    expect(joinGame).toHaveProperty("gameId");
+    expect(joinGame).toHaveProperty("cashId");
     expect(joinGame).toHaveProperty("gameType");
     expect(joinGame).toHaveProperty("tableId");
     expect(joinGame).toHaveProperty("seatNumber");
 
     // Additional assertions specific to this scenario
     expect(joinGame.seatNumber).toBe(1);
+    expect(joinGame.tableId).toBe("2");
     expect(joinGame.tableId).not.toEqual(initialTableId); // Ensure a new table is created
 
     tableTwoId = joinGame.tableId;
@@ -246,7 +295,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber
@@ -274,7 +323,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const { joinGame } = joinGameResponse.body.data;
     expect(joinGame).toHaveProperty("playerId");
     expect(joinGame).toHaveProperty("userId");
-    expect(joinGame).toHaveProperty("gameId");
+    expect(joinGame).toHaveProperty("cashId");
     expect(joinGame).toHaveProperty("gameType");
     expect(joinGame).toHaveProperty("tableId");
     expect(joinGame).toHaveProperty("seatNumber");
@@ -290,7 +339,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber
@@ -318,7 +367,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const { joinGame } = joinGameResponse.body.data;
     expect(joinGame).toHaveProperty("playerId");
     expect(joinGame).toHaveProperty("userId");
-    expect(joinGame).toHaveProperty("gameId");
+    expect(joinGame).toHaveProperty("cashId");
     expect(joinGame).toHaveProperty("gameType");
     expect(joinGame).toHaveProperty("tableId");
     expect(joinGame).toHaveProperty("seatNumber");
@@ -334,10 +383,17 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
 
   it("allows User5 to leave the cash game, destroying associated Player and table", async () => {
     const leaveGameQuery = `
-      mutation LeaveGame($gameId: ID!, $gameType: GameType!) {
-        leaveGame(gameId: $gameId, gameType: $gameType)
+    mutation LeaveGame($gameId: ID!, $gameType: GameType!) {
+      leaveGame(gameId: $gameId, gameType: $gameType) {
+        playerId
+        userId
+        cashId
+        gameType
+        tableId
+        seatNumber
       }
-    `;
+    }
+  `;
 
     const leaveGameVariables = {
       gameId: cashGameId,
@@ -357,12 +413,17 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     expect(leaveGameResponse.body.data).toHaveProperty("leaveGame");
 
     const { leaveGame } = leaveGameResponse.body.data;
-    expect(leaveGame).toBe("Successfully left the game");
+    expect(leaveGame.playerId).toBe("5");
+    expect(leaveGame.userId).toBe("5");
+    expect(leaveGame.cashId).toBe("1");
+    expect(leaveGame.gameType).toBe("cash");
+    expect(leaveGame.tableId).toBe("3");
+    expect(leaveGame.seatNumber).toBe(1);
 
     // Check for the existance of User5Player and user5Table. They should be null
-    if (user5PlayerId && user5TableId) {
-      const playerInstance = await Player.findByPk(user5PlayerId);
-      const tableInstance = await Table.findByPk(user5TableId);
+    if (leaveGame.playerId && leaveGame.tableId) {
+      const playerInstance = await Player.findByPk(leaveGame.playerId);
+      const tableInstance = await Table.findByPk(leaveGame.tableId);
 
       expect(playerInstance).toBeNull();
       expect(tableInstance).toBeNull();
@@ -372,10 +433,17 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
   it("allows User2 to leave the cash game and User5 to join, getting an empty seat at initial table", async () => {
     //User2 leaves game
     const leaveGameQuery = `
-      mutation LeaveGame($gameId: ID!, $gameType: GameType!) {
-        leaveGame(gameId: $gameId, gameType: $gameType)
+    mutation LeaveGame($gameId: ID!, $gameType: GameType!) {
+      leaveGame(gameId: $gameId, gameType: $gameType) {
+        playerId
+        userId
+        cashId
+        gameType
+        tableId
+        seatNumber
       }
-    `;
+    }
+  `;
 
     const leaveGameVariables = {
       gameId: cashGameId,
@@ -396,7 +464,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber
@@ -418,6 +486,167 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
       });
     const { joinGame } = joinGameResponse.body.data;
     expect(joinGame.tableId).toBe(initialTableId);
+    expect(joinGame.seatNumber).toBe(2);
+  });
+
+  it("allows User2 to join the tournament game", async () => {
+    // User1 joins the tournament game
+    const joinGameQuery = `
+      mutation JoinGame($gameId: ID!, $gameType: GameType!) {
+        joinGame(gameId: $gameId, gameType: $gameType) {
+          playerId
+          userId
+          tournamentId
+          gameType
+          tableId
+          seatNumber
+        }
+      }
+    `;
+
+    const joinGameVariables = {
+      gameId: tournamentGameId,
+      gameType: "tournament",
+    };
+
+    const joinGameResponse = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken2}`)
+      .send({
+        query: joinGameQuery,
+        variables: joinGameVariables,
+      });
+
+    expect(joinGameResponse.statusCode).toBe(200);
+    expect(joinGameResponse.body).toHaveProperty("data");
+    expect(joinGameResponse.body.data).toHaveProperty("joinGame");
+    // Check if the returned data has the expected structure
+
+    const { joinGame } = joinGameResponse.body.data;
+    expect(joinGame.tableId).toBe("4");
+    expect(joinGame.seatNumber).toBe(1);
+  });
+  it("allows User1 to join the tournament game", async () => {
+    // User1 joins the tournament game
+    const joinGameQuery = `
+      mutation JoinGame($gameId: ID!, $gameType: GameType!) {
+        joinGame(gameId: $gameId, gameType: $gameType) {
+          playerId
+          userId
+          tournamentId
+          gameType
+          tableId
+          seatNumber
+        }
+      }
+    `;
+
+    const joinGameVariables = {
+      gameId: tournamentGameId,
+      gameType: "tournament",
+    };
+
+    const joinGameResponse = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken1}`)
+      .send({
+        query: joinGameQuery,
+        variables: joinGameVariables,
+      });
+
+    expect(joinGameResponse.statusCode).toBe(200);
+    expect(joinGameResponse.body).toHaveProperty("data");
+    expect(joinGameResponse.body.data).toHaveProperty("joinGame");
+    // Check if the returned data has the expected structure
+
+    const { joinGame } = joinGameResponse.body.data;
+    expect(joinGame.tableId).toBe("4");
+    expect(joinGame.seatNumber).toBe(2);
+  });
+  it("allows User3 to join the tournament game", async () => {
+    // User1 joins the tournament game
+    const joinGameQuery = `
+      mutation JoinGame($gameId: ID!, $gameType: GameType!) {
+        joinGame(gameId: $gameId, gameType: $gameType) {
+          playerId
+          userId
+          tournamentId
+          gameType
+          tableId
+          seatNumber
+        }
+      }
+    `;
+
+    const joinGameVariables = {
+      gameId: tournamentGameId,
+      gameType: "tournament",
+    };
+
+    const joinGameResponse = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken3}`)
+      .send({
+        query: joinGameQuery,
+        variables: joinGameVariables,
+      });
+
+    expect(joinGameResponse.statusCode).toBe(200);
+    expect(joinGameResponse.body).toHaveProperty("data");
+    expect(joinGameResponse.body.data).toHaveProperty("joinGame");
+    // Check if the returned data has the expected structure
+
+    const { joinGame } = joinGameResponse.body.data;
+    expect(joinGame.tableId).toBe("5");
+    expect(joinGame.seatNumber).toBe(1);
+  });
+  it("allows User3 to leave the tournament game, and checks that they are still a part of the cash game", async () => {
+    const leaveGameQuery = `
+      mutation LeaveGame($gameId: ID!, $gameType: GameType!) {
+        leaveGame(gameId: $gameId, gameType: $gameType) {
+          playerId
+          userId
+          tournamentId
+          gameType
+          tableId
+          seatNumber
+        }
+      }
+    `;
+
+    const leaveGameVariables = {
+      gameId: tournamentGameId,
+      gameType: "tournament",
+    };
+
+    const leaveGameResponse = await request(app)
+      .post("/graphql")
+      .set("Authorization", `Bearer ${authToken3}`)
+      .send({
+        query: leaveGameQuery,
+        variables: leaveGameVariables,
+      });
+    expect(leaveGameResponse.statusCode).toBe(200);
+    expect(leaveGameResponse.body).toHaveProperty("data");
+    expect(leaveGameResponse.body.data).toHaveProperty("leaveGame");
+
+    const { leaveGame } = leaveGameResponse.body.data;
+    expect(leaveGame.playerId).toBe("9");
+    expect(leaveGame.tournamentId).toBe("1");
+    expect(leaveGame.gameType).toBe("tournament");
+
+    // Check for the existance of Player9 and user3. They should be null
+    if (leaveGame.playerId && leaveGame.tableId) {
+      const playerInstance = await Player.findByPk(leaveGame.playerId);
+      const tableInstance = await Table.findByPk(leaveGame.tableId);
+
+      expect(playerInstance).toBeNull();
+      expect(tableInstance).toBeNull();
+    }
+
+    //Check that User3 is still a Player in the cash game
+    const playerInstance = await Player.findByPk("3");
+    expect(playerInstance).not.toBeNull();
   });
 
   it("changes the status of a game to 'finished'", async () => {
@@ -425,7 +654,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
       mutation UpdateGameStatus($gameId: ID!, $gameType: GameType!, $status: GameStatus!) {
         updateGameStatus(gameId: $gameId, gameType: $gameType, status: $status) {
           message
-          gameId
+          cashId
           gameType
           status
         }
@@ -450,8 +679,9 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
 
     // Ensure the mutation response is as expected
     const { updateGameStatus } = updateGameStatusResponse.body.data;
+
     expect(updateGameStatus.message).toBe("Game status updated successfully");
-    expect(updateGameStatus.gameId).toBe(cashGameId);
+    expect(updateGameStatus.cashId).toBe(cashGameId);
     expect(updateGameStatus.gameType).toBe("cash");
     expect(updateGameStatus.status).toBe("finished");
   });
@@ -462,7 +692,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber

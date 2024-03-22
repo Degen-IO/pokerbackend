@@ -11,7 +11,8 @@ const typeDefs = gql`
   type Player {
     playerId: ID!
     userId: ID!
-    gameId: ID!
+    cashId: ID
+    tournamentId: ID
     gameType: String!
     tableId: ID!
     seatNumber: Int
@@ -27,7 +28,7 @@ const typeDefs = gql`
 
   type Table {
     tableId: ID!
-    gameId: ID!
+    # Need cash or tournament ID?
     gameType: String!
     dealerSeat: Int
   }
@@ -39,7 +40,7 @@ const typeDefs = gql`
   }
 
   type CashGame {
-    gameId: ID!
+    cashId: ID!
     name: String!
     status: GameStatus!
     startDateTime: String!
@@ -51,7 +52,7 @@ const typeDefs = gql`
   }
 
   type TournamentGame {
-    gameId: ID!
+    tournamentId: ID!
     name: String!
     status: GameStatus!
     startDateTime: String!
@@ -81,13 +82,15 @@ const typeDefs = gql`
 
   type GameStatusUpdateResponse {
     message: String!
-    gameId: ID!
+    gameId: ID
+    cashId: ID
+    tournamentId: ID
     gameType: GameType!
     status: GameStatus!
   }
 
   type GameUpdatePayload {
-    gameId: ID!
+    gameId: ID
     message: String!
     handState: HandState
   }
@@ -246,10 +249,12 @@ const typeDefs = gql`
 
     joinGame(gameId: ID!, gameType: GameType!): Player
 
-    leaveGame(gameId: ID!, gameType: GameType!): String
+    leaveGame(gameId: ID!, gameType: GameType!): Player
 
     updateGameStatus(
       gameId: ID!
+      cashId: ID
+      tournamentId: ID
       gameType: GameType!
       status: GameStatus!
     ): GameStatusUpdateResponse
@@ -261,7 +266,7 @@ const typeDefs = gql`
 
   type Subscription {
     newMessage: String
-    watchGame(gameId: ID!): GameUpdatePayload
+    watchGame(gameId: ID!, gameType: GameType!): GameUpdatePayload
   }
 `;
 

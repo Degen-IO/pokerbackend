@@ -1,6 +1,6 @@
 const getTournamentGameModel = (sequelize, { DataTypes }) => {
   const TournamentGame = sequelize.define("tournamentGame", {
-    gameId: {
+    tournamentId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,
@@ -83,13 +83,13 @@ const getTournamentGameModel = (sequelize, { DataTypes }) => {
 
     TournamentGame.belongsTo(models.PokerGroup, { foreignKey: "groupId" });
 
-    TournamentGame.hasMany(models.PlayerHand, { foreignKey: "gameId" });
+    TournamentGame.hasMany(models.PlayerHand, { foreignKey: "tournamentId" });
 
-    TournamentGame.hasMany(models.PlayerAction, { foreignKey: "gameId" });
+    TournamentGame.hasMany(models.PlayerAction, { foreignKey: "tournamentId" });
 
-    TournamentGame.hasMany(models.BlindLevel, { foreignKey: "gameId" });
+    TournamentGame.hasMany(models.BlindLevel, { foreignKey: "tournamentId" });
 
-    TournamentGame.hasMany(models.Table, { foreignKey: "gameId" });
+    TournamentGame.hasMany(models.Table, { foreignKey: "tournamentId" });
   };
 
   return TournamentGame;

@@ -660,12 +660,12 @@ const resolvers = {
           userId: context.authUserId,
         });
 
-        // Create the initial table for the Cash Game
-        await Table.create({
-          gameId: cashGame.gameId,
-          gameType: "cash",
-          // Add any necessary attributes for the table
-        });
+        // // Create the initial table for the Cash Game
+        // await Table.create({
+        //   gameId: cashGame.gameId,
+        //   gameType: "cash",
+        //   // Add any necessary attributes for the table
+        // });
 
         return cashGame;
       } catch (error) {
@@ -754,11 +754,11 @@ const resolvers = {
         userId: context.authUserId, // Associate with the user
       });
 
-      // Create the initial table for the Cash Game
-      await Table.create({
-        gameId: tournamentGame.gameId,
-        gameType: "tournament",
-      });
+      // // Create the initial table for the Cash Game
+      // await Table.create({
+      //   gameId: tournamentGame.gameId,
+      //   gameType: "tournament",
+      // });
 
       return tournamentGame;
     },
@@ -814,7 +814,7 @@ const resolvers = {
       // Find and delete all associated tables of the game
       const tables = await Table.findAll({
         where: {
-          gameId: game.gameId,
+          [`${gameType}Id`]: game[`${gameType}Id`],
         },
       });
 
@@ -868,8 +868,8 @@ const resolvers = {
           const existingPlayer = await Player.findOne({
             where: {
               userId: context.authUserId,
-              gameId: game.gameId,
               gameType: gameType,
+              [`${gameType}Id`]: game[`${gameType}Id`],
             },
           });
 
@@ -892,7 +892,8 @@ const resolvers = {
           );
           const newPlayer = await Player.create({
             userId: context.authUserId,
-            gameId: game.gameId,
+            cashId: game.cashId,
+            tournamentId: game.tournamentId,
             gameType: gameType,
             tableId: table.tableId,
             seatNumber: seatNumber,
@@ -900,15 +901,16 @@ const resolvers = {
 
           // After creating the player, publish the game update
           //THIS WILL LIKELY BE CHANGED TO PUBSUB??
+
           const message = JSON.stringify({
             type: "gameUpdate",
-            gameId: game.gameId,
+            [`${gameType}Id`]: game[`${gameType}Id`],
             gameType: gameType,
             status: game.status,
             userId: context.authUserId, // Include the user ID in the payload
           });
 
-          publishMessage(`game:${game.gameId}`, message);
+          publishMessage(`${gameType}game:${game[`${gameType}Id`]}`, message);
 
           return newPlayer;
         } else {
@@ -945,13 +947,24 @@ const resolvers = {
         const playerToRemove = await Player.findOne({
           where: {
             userId: context.authUserId,
-            gameId: game.gameId,
+            gameType: gameType,
+            [`${gameType}Id`]: game[`${gameType}Id`],
           },
         });
 
         if (!playerToRemove) {
           throw new Error("Player not found in the game");
         }
+
+        // Get the player's data before removing them
+        const playerData = {
+          playerId: playerToRemove.playerId,
+          userId: playerToRemove.userId,
+          [`${gameType}Id`]: playerToRemove[`${playerToRemove.gameType}Id`],
+          gameType: playerToRemove.gameType,
+          tableId: playerToRemove.tableId,
+          seatNumber: playerToRemove.seatNumber,
+        };
 
         // Remove the player from the game
         await playerToRemove.destroy();
@@ -971,7 +984,7 @@ const resolvers = {
           }
         }
 
-        return "Successfully left the game";
+        return playerData;
       } catch (error) {
         console.error("Error while leaving the game:", error.message);
         throw new Error("Error leaving the game");
@@ -998,7 +1011,7 @@ const resolvers = {
 
         return {
           message: "Game status updated successfully",
-          gameId: game.gameId,
+          [`${gameType}Id`]: game[`${gameType}Id`],
           gameType: gameType,
           status: game.status,
         };
@@ -1034,13 +1047,16 @@ const resolvers = {
         });
 
         // Publish the cards data to the game channel
-        await pubsub.publish(`game:${table.gameId}`, {
-          watchGame: {
-            gameId: table.gameId,
-            message: "Cards distributed successfully!",
-            handState,
-          },
-        });
+        await pubsub.publish(
+          `${table.gameType}game:${table[`${table.gameType}Id`]}`,
+          {
+            watchGame: {
+              [`${table.gameType}Id`]: table[`${table.gameType}Id`],
+              message: "Cards distributed successfully!",
+              handState,
+            },
+          }
+        );
 
         return {
           message: "Cards distributed successfully!",
@@ -1068,9 +1084,9 @@ const resolvers = {
       subscribe: () => pubsub.asyncIterator(["MESSAGE_POSTED"]), // This will subscribe to the message_posted channel (Need 2 Apollo instances to test)
     },
     watchGame: {
-      subscribe: (parent, { gameId }) => {
-        console.log(`Client subscribed to game:${gameId}`);
-        return pubsub.asyncIterator([`game:${gameId}`]);
+      subscribe: (parent, { gameId, gameType }) => {
+        console.log(`Client subscribed to ${gameType}game:${gameId}`);
+        return pubsub.asyncIterator([`${gameType}game:${gameId}`]);
       },
     },
   },

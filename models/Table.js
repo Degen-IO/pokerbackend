@@ -23,8 +23,8 @@ const getTableModel = (sequelize, { DataTypes }) => {
 
   Table.associate = (models) => {
     // A table belongs to a CashGame or TournamentGame
-    Table.belongsTo(models.CashGame, { foreignKey: "gameId" });
-    Table.belongsTo(models.TournamentGame, { foreignKey: "gameId" });
+    Table.belongsTo(models.CashGame, { foreignKey: "cashId" });
+    Table.belongsTo(models.TournamentGame, { foreignKey: "tournamentId" });
 
     // A table can have multiple players
     Table.hasMany(models.Player, { foreignKey: "tableId" });

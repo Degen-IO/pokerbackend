@@ -13,11 +13,11 @@ const getPlayerHandModel = (sequelize, { DataTypes }) => {
   PlayerHand.associate = (models) => {
     PlayerHand.belongsTo(models.User, { foreignKey: "userId" });
     PlayerHand.belongsTo(models.CashGame, {
-      foreignKey: "gameId",
+      foreignKey: "cashId",
       as: "cashGame",
     });
     PlayerHand.belongsTo(models.TournamentGame, {
-      foreignKey: "gameId",
+      foreignKey: "tournamentId",
       as: "tournamentGame",
     });
   };
