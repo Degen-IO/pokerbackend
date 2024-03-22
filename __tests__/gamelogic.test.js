@@ -46,7 +46,7 @@ describe("It should create a game and deal cards", () => {
     const query = `
     mutation CreateCashGame($groupId: ID!, $name: String!, $startDateTime: String!, $playersPerTable: Int!, $startingChips: Float!, $blindsSmall: Float!, $blindsBig: Float!, $duration: Duration!) {
         createCashGame(groupId: $groupId, name: $name, startDateTime: $startDateTime, playersPerTable: $playersPerTable, startingChips: $startingChips, blindsSmall: $blindsSmall, blindsBig: $blindsBig, duration: $duration) {
-          gameId
+          cashId
           name
           status
           startDateTime
@@ -76,7 +76,7 @@ describe("It should create a game and deal cards", () => {
         },
       });
     // Assign the cash game ID to the variable
-    cashGameId = response.body.data.createCashGame.gameId;
+    cashGameId = response.body.data.createCashGame.cashId;
     expect(response.statusCode).toBe(200);
   });
 
@@ -86,7 +86,8 @@ describe("It should create a game and deal cards", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
+          tournamentId
           gameType
           tableId
           seatNumber
@@ -116,7 +117,8 @@ describe("It should create a game and deal cards", () => {
 
     expect(joinGame).toHaveProperty("playerId");
     expect(joinGame).toHaveProperty("userId");
-    expect(joinGame).toHaveProperty("gameId");
+    expect(joinGame).toHaveProperty("cashId");
+    expect(joinGame).toHaveProperty("tournamentId", null);
     expect(joinGame).toHaveProperty("gameType");
     expect(joinGame).toHaveProperty("tableId");
     expect(joinGame).toHaveProperty("seatNumber");
@@ -130,7 +132,8 @@ describe("It should create a game and deal cards", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
+          tournamentId
           gameType
           tableId
           seatNumber
@@ -159,7 +162,7 @@ describe("It should create a game and deal cards", () => {
     tableId = joinGameResponse.body.data.joinGame.tableId;
     expect(joinGame).toHaveProperty("playerId");
     expect(joinGame).toHaveProperty("userId");
-    expect(joinGame).toHaveProperty("gameId");
+    expect(joinGame).toHaveProperty("cashId");
     expect(joinGame).toHaveProperty("gameType");
     expect(joinGame).toHaveProperty("tableId");
     expect(joinGame).toHaveProperty("seatNumber");

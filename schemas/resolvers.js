@@ -1020,7 +1020,7 @@ const resolvers = {
 
         return {
           message: "Game status updated successfully",
-          gameId: game.gameId,
+          [`${gameType}Id`]: game[`${gameType}Id`],
           gameType: gameType,
           status: game.status,
         };

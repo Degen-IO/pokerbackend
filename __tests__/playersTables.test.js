@@ -67,7 +67,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const createCashGameQuery = `
       mutation CreateCashGame($groupId: ID!, $name: String!, $startDateTime: String!, $playersPerTable: Int!, $startingChips: Float!, $blindsSmall: Float!, $blindsBig: Float!, $duration: Duration!) {
         createCashGame(groupId: $groupId, name: $name, startDateTime: $startDateTime, playersPerTable: $playersPerTable, startingChips: $startingChips, blindsSmall: $blindsSmall, blindsBig: $blindsBig, duration: $duration) {
-          gameId
+          cashId
           status
           name
         }
@@ -102,12 +102,12 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     }
 
     // Assign the cash game ID to the variable
-    cashGameId = createCashGameResponse.body.data.createCashGame.gameId;
+    cashGameId = createCashGameResponse.body.data.createCashGame.cashId;
 
     const createTournamentGameQuery = `
   mutation CreateTournamentGame($groupId: ID!, $name: String!, $startDateTime: String!, $playersPerTable: Int!, $numberOfRebuys: Int!, $rebuyPeriod: RebuyPeriod!, $addOn: Boolean!, $startingChips: Float!, $gameSpeed: GameSpeed!, $lateRegistrationDuration: LateRegistrationDuration!) {
   createTournamentGame(groupId: $groupId, name: $name, startDateTime: $startDateTime, playersPerTable: $playersPerTable, numberOfRebuys: $numberOfRebuys, rebuyPeriod: $rebuyPeriod, addOn: $addOn, startingChips: $startingChips, gameSpeed: $gameSpeed, lateRegistrationDuration: $lateRegistrationDuration) {
-    gameId
+    tournamentId
     status
     name
   }
@@ -145,7 +145,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
 
     // Assign the tournament game ID to a variable
     tournamentGameId =
-      createTournamentGameResponse.body.data.createTournamentGame.gameId;
+      createTournamentGameResponse.body.data.createTournamentGame.tournamentId;
   });
 
   afterAll(async () => {
@@ -157,7 +157,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber
@@ -188,8 +188,8 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     expect(joinGame).toHaveProperty("playerId");
     expect(joinGame.playerId).toBe("1");
     expect(joinGame).toHaveProperty("userId");
-    expect(joinGame).toHaveProperty("gameId");
-    expect(joinGame.gameId).toBe("1");
+    expect(joinGame).toHaveProperty("cashId");
+    expect(joinGame.cashId).toBe("1");
     expect(joinGame).toHaveProperty("gameType");
     expect(joinGame).toHaveProperty("tableId");
     expect(joinGame.tableId).toBe("1");
@@ -205,7 +205,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber
@@ -233,7 +233,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const { joinGame } = joinGameResponse.body.data;
     expect(joinGame).toHaveProperty("playerId");
     expect(joinGame).toHaveProperty("userId");
-    expect(joinGame).toHaveProperty("gameId");
+    expect(joinGame).toHaveProperty("cashId");
     expect(joinGame).toHaveProperty("gameType");
     expect(joinGame).toHaveProperty("tableId");
     expect(joinGame).toHaveProperty("seatNumber");
@@ -248,7 +248,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber
@@ -276,7 +276,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const { joinGame } = joinGameResponse.body.data;
     expect(joinGame).toHaveProperty("playerId");
     expect(joinGame).toHaveProperty("userId");
-    expect(joinGame).toHaveProperty("gameId");
+    expect(joinGame).toHaveProperty("cashId");
     expect(joinGame).toHaveProperty("gameType");
     expect(joinGame).toHaveProperty("tableId");
     expect(joinGame).toHaveProperty("seatNumber");
@@ -295,7 +295,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber
@@ -323,7 +323,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const { joinGame } = joinGameResponse.body.data;
     expect(joinGame).toHaveProperty("playerId");
     expect(joinGame).toHaveProperty("userId");
-    expect(joinGame).toHaveProperty("gameId");
+    expect(joinGame).toHaveProperty("cashId");
     expect(joinGame).toHaveProperty("gameType");
     expect(joinGame).toHaveProperty("tableId");
     expect(joinGame).toHaveProperty("seatNumber");
@@ -339,7 +339,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber
@@ -367,7 +367,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const { joinGame } = joinGameResponse.body.data;
     expect(joinGame).toHaveProperty("playerId");
     expect(joinGame).toHaveProperty("userId");
-    expect(joinGame).toHaveProperty("gameId");
+    expect(joinGame).toHaveProperty("cashId");
     expect(joinGame).toHaveProperty("gameType");
     expect(joinGame).toHaveProperty("tableId");
     expect(joinGame).toHaveProperty("seatNumber");
@@ -387,7 +387,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
       leaveGame(gameId: $gameId, gameType: $gameType) {
         playerId
         userId
-        gameId
+        cashId
         gameType
         tableId
         seatNumber
@@ -415,7 +415,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
     const { leaveGame } = leaveGameResponse.body.data;
     expect(leaveGame.playerId).toBe("5");
     expect(leaveGame.userId).toBe("5");
-    expect(leaveGame.gameId).toBe("1");
+    expect(leaveGame.cashId).toBe("1");
     expect(leaveGame.gameType).toBe("cash");
     expect(leaveGame.tableId).toBe("3");
     expect(leaveGame.seatNumber).toBe(1);
@@ -437,7 +437,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
       leaveGame(gameId: $gameId, gameType: $gameType) {
         playerId
         userId
-        gameId
+        cashId
         gameType
         tableId
         seatNumber
@@ -464,7 +464,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber
@@ -496,7 +496,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          tournamentId
           gameType
           tableId
           seatNumber
@@ -533,7 +533,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          tournamentId
           gameType
           tableId
           seatNumber
@@ -570,7 +570,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          tournamentId
           gameType
           tableId
           seatNumber
@@ -606,7 +606,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         leaveGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          tournamentId
           gameType
           tableId
           seatNumber
@@ -632,7 +632,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
 
     const { leaveGame } = leaveGameResponse.body.data;
     expect(leaveGame.playerId).toBe("9");
-    expect(leaveGame.gameId).toBe("1");
+    expect(leaveGame.tournamentId).toBe("1");
     expect(leaveGame.gameType).toBe("tournament");
 
     // Check for the existance of Player9 and user3. They should be null
@@ -654,7 +654,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
       mutation UpdateGameStatus($gameId: ID!, $gameType: GameType!, $status: GameStatus!) {
         updateGameStatus(gameId: $gameId, gameType: $gameType, status: $status) {
           message
-          gameId
+          cashId
           gameType
           status
         }
@@ -679,8 +679,9 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
 
     // Ensure the mutation response is as expected
     const { updateGameStatus } = updateGameStatusResponse.body.data;
+
     expect(updateGameStatus.message).toBe("Game status updated successfully");
-    expect(updateGameStatus.gameId).toBe(cashGameId);
+    expect(updateGameStatus.cashId).toBe(cashGameId);
     expect(updateGameStatus.gameType).toBe("cash");
     expect(updateGameStatus.status).toBe("finished");
   });
@@ -691,7 +692,7 @@ describe("joinGame, leaveGame, updateGameStatus operations", () => {
         joinGame(gameId: $gameId, gameType: $gameType) {
           playerId
           userId
-          gameId
+          cashId
           gameType
           tableId
           seatNumber

@@ -82,7 +82,9 @@ const typeDefs = gql`
 
   type GameStatusUpdateResponse {
     message: String!
-    gameId: ID!
+    gameId: ID
+    cashId: ID
+    tournamentId: ID
     gameType: GameType!
     status: GameStatus!
   }
@@ -251,6 +253,8 @@ const typeDefs = gql`
 
     updateGameStatus(
       gameId: ID!
+      cashId: ID
+      tournamentId: ID
       gameType: GameType!
       status: GameStatus!
     ): GameStatusUpdateResponse
