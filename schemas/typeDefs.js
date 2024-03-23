@@ -19,11 +19,23 @@ const typeDefs = gql`
   }
 
   type Game {
-    gameId: ID!
+    gameId: ID
+    cashId: ID
+    tournamentId: ID
     gameType: GameType!
     name: String!
     status: GameStatus!
     startDateTime: String!
+    playersPerTable: Int!
+    startingChips: Float!
+    blindsSmall: Float
+    blindsBig: Float
+    duration: Duration
+    numberOfRebuys: Int
+    rebuyPeriod: RebuyPeriod
+    addOn: Boolean
+    gameSpeed: GameSpeed
+    lateRegistrationDuration: LateRegistrationDuration
   }
 
   type Table {
@@ -196,6 +208,8 @@ const typeDefs = gql`
     users: [User]!
     user(userId: ID!): User
     userGames(userId: ID!): [Game]!
+    game(gameId: ID!, gameType: String!): Game
+    playersInGame(gameId: ID!, gameType: GameType!): [Player]!
     pokerGroups(userId: ID!): [PokerGroup]
     pendingMembers(groupId: ID!): [User]
     membersOfGroup(groupId: ID!): [User]

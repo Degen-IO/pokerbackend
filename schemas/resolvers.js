@@ -86,7 +86,40 @@ const resolvers = {
         throw error;
       }
     },
+    game: async (parent, { gameId, gameType }) => {
+      if (gameType === "tournament") {
+        return TournamentGame.findByPk(gameId);
+      } else if (gameType === "cash") {
+        return CashGame.findByPk(gameId);
+      } else {
+        throw new Error("Invalid game type");
+      }
+    },
+    playersInGame: async (parent, { gameId, gameType }) => {
+      // Find the game based on the gameId and gameType
+      let game;
+      if (gameType === "tournament") {
+        game = await TournamentGame.findByPk(gameId);
+      } else if (gameType === "cash") {
+        game = await CashGame.findByPk(gameId);
+      } else {
+        throw new Error("Invalid game type");
+      }
 
+      if (!game) {
+        throw new Error("Game not found");
+      }
+
+      // Find all players associated with the game
+      const players = await Player.findAll({
+        where: {
+          [`${gameType}Id`]: game[`${gameType}Id`],
+          gameType: gameType,
+        },
+      });
+
+      return players;
+    },
     pokerGroups: async (parent, { userId }) => {
       // Fetch and return poker groups associated with the specified user ID
       try {
