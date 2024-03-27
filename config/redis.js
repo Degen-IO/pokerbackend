@@ -1,6 +1,7 @@
 // In your config/redis.js
 const { RedisPubSub } = require("graphql-redis-subscriptions");
 const { Redis } = require("ioredis");
+const { PubSub } = require("graphql-subscriptions"); // Import the in-memory PubSub
 
 let redisClient, redisPublisher, redisSubscriber, pubsub, sessionStore;
 
@@ -31,6 +32,9 @@ if (process.env.NODE_ENV !== "test") {
 
   // Using the general client for session store
   sessionStore = redisClient;
+} else {
+  // Initialize an in-memory PubSub instance for tests
+  pubsub = new PubSub();
 }
 module.exports = {
   pubsub,
