@@ -891,6 +891,7 @@ const resolvers = {
           (gameType === "cash" && game.status !== "finished") ||
           (gameType === "tournament" &&
             (game.status === "waiting" ||
+              game.status === "starting" ||
               (game.status === "ongoing" &&
                 !hasLateRegistrationExpired(
                   game.startDateTime,
@@ -1081,6 +1082,7 @@ const resolvers = {
 
         // Publish the cards data to the game channel
         await pubsub.publish(
+          //ie: `cashgame:1`
           `${table.gameType}game:${table[`${table.gameType}Id`]}`,
           {
             watchGame: {

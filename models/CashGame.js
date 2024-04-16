@@ -19,7 +19,7 @@ const getCashGameModel = (sequelize, { DataTypes }) => {
       },
     },
     status: {
-      type: DataTypes.ENUM("waiting", "ongoing", "finished"),
+      type: DataTypes.ENUM("waiting", "starting", "ongoing", "finished"),
       allowNull: false,
     },
 

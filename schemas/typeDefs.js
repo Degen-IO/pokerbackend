@@ -138,6 +138,7 @@ const typeDefs = gql`
 
   enum GameStatus {
     waiting
+    starting
     ongoing
     finished
   }
