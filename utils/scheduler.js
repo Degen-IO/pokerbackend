@@ -8,8 +8,6 @@ cron.schedule("* * * * *", async () => {
   try {
     const currentDateTimeUTC = new Date();
     const oneMinuteBeforeStart = new Date(currentDateTimeUTC.getTime() + 60000);
-    console.log("------------Current UTC Time:", currentDateTimeUTC);
-    console.log("------------One Minute Before Start:", oneMinuteBeforeStart);
 
     // Find games waiting to start
     const waitingCashGames = await CashGame.findAll({
@@ -23,12 +21,16 @@ cron.schedule("* * * * *", async () => {
         },
       },
     });
-    console.log("--------------------waitingCashGames", waitingCashGames);
 
     const waitingTournamentGames = await TournamentGame.findAll({
       where: {
         status: "waiting",
-        startDateTime: oneMinuteBeforeStart,
+        startDateTime: {
+          [Op.between]: [
+            new Date(oneMinuteBeforeStart.getTime() - 60000), // One minute behind
+            oneMinuteBeforeStart, // One minute ahead
+          ],
+        },
       },
     });
 
