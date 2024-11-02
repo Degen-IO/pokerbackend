@@ -1,6 +1,12 @@
 const Sequelize = require("sequelize");
 require("dotenv").config();
 
+const { redisSubscriber } = require("../config/redis");
+
+if (!redisSubscriber) {
+  console.error("redisSubscriber is undefined. Check Redis configuration.");
+}
+
 let sequelize;
 
 if (process.env.NODE_ENV === "test") {
