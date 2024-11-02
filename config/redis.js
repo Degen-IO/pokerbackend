@@ -1,51 +1,47 @@
-// In your config/redis.js
+// config/redis.js
 const { RedisPubSub } = require("graphql-redis-subscriptions");
 const { Redis } = require("ioredis");
-const { PubSub } = require("graphql-subscriptions"); // Import the in-memory PubSub
+const { PubSub } = require("graphql-subscriptions");
 
 let redisClient, redisPublisher, redisSubscriber, pubsub, sessionStore;
 
-// Same setup as sequelize connection, TO DO: setup redis testing instance
-if (process.env.NODE_ENV !== "test") {
-  const options = {
-    host: process.env.REDIS_HOST || "redis",
-    port: parseInt(process.env.REDIS_PORT || "6379"),
-    retryStrategy: (times) => {
-      return Math.min(times * 50, 2000);
-    },
-  };
+try {
+  if (process.env.NODE_ENV === "test") {
+    // Use in-memory PubSub for tests
+    pubsub = new PubSub();
+    console.log("Initialized in-memory PubSub for testing.");
+  } else {
+    const options = {
+      host: process.env.REDIS_HOST || "redis",
+      port: parseInt(process.env.REDIS_PORT || "6379"),
+      retryStrategy: (times) => Math.min(times * 50, 2000),
+    };
 
-  // General Redis client for commands
-  redisClient = new Redis(options);
+    redisClient = new Redis(options);
+    redisPublisher = new Redis(options);
+    redisSubscriber = new Redis(options);
 
-  // Dedicated Redis client for publishing
-  redisPublisher = new Redis(options);
+    pubsub = new RedisPubSub({
+      publisher: redisPublisher,
+      subscriber: redisSubscriber,
+    });
 
-  // Dedicated Redis client for subscribing
-  redisSubscriber = new Redis(options);
-
-  // Setup for Redis PubSub (for GraphQL subscriptions)
-  pubsub = new RedisPubSub({
-    publisher: redisPublisher,
-    subscriber: redisSubscriber,
-  });
-
-  // Using the general client for session store
-  sessionStore = redisClient;
-} else {
-  // Initialize an in-memory PubSub instance for tests
-  pubsub = new PubSub();
+    sessionStore = redisClient;
+    console.log("Redis clients initialized successfully.");
+  }
+} catch (error) {
+  console.error("Error initializing Redis clients:", error);
 }
+
 module.exports = {
   pubsub,
   sessionStore,
   redisClient,
   redisPublisher,
   redisSubscriber,
-  // This may be used for tests in the future...?
   closeRedisConnections: async function () {
-    await redisClient.quit();
-    await redisPublisher.quit();
-    await redisSubscriber.quit();
+    if (redisClient) await redisClient.quit();
+    if (redisPublisher) await redisPublisher.quit();
+    if (redisSubscriber) await redisSubscriber.quit();
   },
 };
